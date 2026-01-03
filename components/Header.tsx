@@ -40,10 +40,19 @@ const Header: React.FC = () => {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between">
+      <div className="relative max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between">
+        <button
+          type="button"
+          aria-label="Abrir menu"
+          className="md:hidden absolute right-4 top-6 p-2 -mr-2 text-gray-700 hover:text-primary transition-colors"
+          onClick={() => setIsMobileMenuOpen(true)}
+        >
+          <Menu size={28} />
+        </button>
+
         <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-4 md:mb-0">
           {/* Logo Construction */}
-          <div className="w-full flex items-center justify-between md:w-auto md:justify-start">
+          <div className="w-full flex items-center justify-center md:w-auto md:justify-start">
             <a href="#" className="flex items-center gap-2 group hover:opacity-90 transition-opacity">
               <div className="flex items-center">
                 <span className="text-6xl font-black text-[#00C24A] tracking-tighter leading-none font-sans">H</span>
@@ -57,15 +66,6 @@ const Header: React.FC = () => {
                 <span className="text-xl font-bold text-[#00C24A] tracking-tight -mt-1 font-sans">piauí.com</span>
               </div>
             </a>
-
-            <button
-              type="button"
-              aria-label="Abrir menu"
-              className="md:hidden p-2 -mr-2 text-gray-700 hover:text-primary transition-colors"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu size={28} />
-            </button>
           </div>
 
           <nav className="hidden md:flex flex-wrap justify-center gap-6 text-sm md:text-base font-black text-gray-600 md:mb-1">
