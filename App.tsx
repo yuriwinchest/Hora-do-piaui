@@ -1,5 +1,5 @@
 import React from 'react';
-import { Reply } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Reply } from 'lucide-react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import NewsCard from './components/NewsCard';
@@ -19,6 +19,14 @@ import {
 
 const App: React.FC = () => {
   const [activeSubNav, setActiveSubNav] = React.useState('Coluna Mariano Wikoli');
+  const videoCarouselRef = React.useRef<HTMLDivElement | null>(null);
+
+  const scrollVideoCarousel = React.useCallback((direction: 'left' | 'right') => {
+    const el = videoCarouselRef.current;
+    if (!el) return;
+    const step = 192;
+    el.scrollBy({ left: direction === 'left' ? -step : step, behavior: 'smooth' });
+  }, []);
 
   const filteredMiddleList = React.useMemo(() => {
     const items = [...MIDDLE_LIST];
@@ -144,12 +152,35 @@ const App: React.FC = () => {
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-200 pb-2">
             Assista aos vídeos de hoje
           </h3>
-          <div className="md:hidden -mx-4 px-4 overflow-x-auto flex gap-4 snap-x snap-mandatory pb-2">
-            {VIDEOS.map((video) => (
-              <div key={video.id} className="w-44 flex-shrink-0 snap-start">
-                <VideoCard item={video} />
-              </div>
-            ))}
+          <div className="md:hidden relative -mx-4">
+            <button
+              type="button"
+              aria-label="Vídeos anteriores"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-gray-200 shadow-sm rounded-full p-2"
+              onClick={() => scrollVideoCarousel('left')}
+            >
+              <ChevronLeft size={18} className="text-gray-800" />
+            </button>
+            <button
+              type="button"
+              aria-label="Próximos vídeos"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-gray-200 shadow-sm rounded-full p-2"
+              onClick={() => scrollVideoCarousel('right')}
+            >
+              <ChevronRight size={18} className="text-gray-800" />
+            </button>
+
+            <div
+              ref={videoCarouselRef}
+              className="px-4 overflow-x-scroll flex flex-nowrap gap-4 snap-x snap-mandatory pb-2 touch-pan-x"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
+              {VIDEOS.map((video) => (
+                <div key={video.id} className="w-44 flex-shrink-0 snap-start">
+                  <VideoCard item={video} />
+                </div>
+              ))}
+            </div>
           </div>
           <div className="hidden md:grid grid-cols-3 lg:grid-cols-5 gap-4">
             {VIDEOS.map((video) => (
