@@ -91,7 +91,7 @@ const App: React.FC = () => {
           <div className="lg:col-span-5 h-full">
             <NewsCard item={MIDDLE_FEATURE} variant="vertical" />
           </div>
-          <div className="lg:col-span-7 flex flex-col gap-2">
+          <div className="lg:col-span-7 flex flex-col gap-1">
             {MIDDLE_LIST.map((item) => (
               <NewsListItem key={item.id} item={item} />
             ))}

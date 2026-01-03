@@ -7,10 +7,10 @@ interface NewsListItemProps {
 
 const NewsListItem: React.FC<NewsListItemProps> = ({ item }) => {
   return (
-    <article className="flex gap-2 group cursor-pointer border-b border-gray-100 pb-2 last:border-0 last:pb-0">
-      <img 
-        src={item.image} 
-        alt={item.title} 
+    <article className="flex gap-2 group cursor-pointer border-b border-gray-100 pb-1 last:border-0 last:pb-0">
+      <img
+        src={item.image}
+        alt={item.title}
         className="w-28 h-20 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
       />
       <div>
