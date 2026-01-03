@@ -175,10 +175,10 @@ const HomePage: React.FC = () => {
           </div>
         </div>
 
-        <div className="lg:col-span-4 pl-0 lg:pl-8 lg:border-l border-gray-200 flex flex-col gap-6">
-          <div className="space-y-6 divide-y divide-gray-100">
+        <div className="lg:col-span-4 pl-0 lg:pl-8 lg:border-l border-gray-200 flex flex-col">
+          <div className="divide-y divide-gray-100">
             {SIDE_NEWS.map((item) => (
-              <div key={item.id} className="pt-6 first:pt-0">
+              <div key={item.id} className="py-4 first:pt-0">
                 <NewsCard item={item} variant="compact" showDescription={true} />
               </div>
             ))}
