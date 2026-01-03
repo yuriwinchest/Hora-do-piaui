@@ -19,12 +19,12 @@ import {
 
 const App: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col font-sans text-gray-900">
+    <div className="min-h-screen flex flex-col font-sans font-bold text-gray-900">
       <Header />
 
       <main className="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
         {/* Main Headline with "Highlighter" effect: White text on Green background */}
-        <h1 className="text-4xl md:text-5xl font-black mb-8 font-serif leading-tight">
+        <h1 className="text-4xl md:text-5xl font-medium mb-8 font-serif leading-tight">
           <span className="bg-[#00C24A] text-white px-2 box-decoration-clone leading-[1.3] inline-block">
             Trump anuncia ataque à Venezuela
           </span>
@@ -72,8 +72,8 @@ const App: React.FC = () => {
                 key={item.label}
                 href={item.href}
                 className={`pb-2 border-b-2 font-black uppercase text-base tracking-wide whitespace-nowrap transition-all ${item.isActive
-                    ? 'border-black text-gray-900'
-                    : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+                  ? 'border-black text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
                   }`}
               >
                 {item.label}
