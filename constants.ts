@@ -9,11 +9,9 @@ export const HEADER_NAV: NavItem[] = [
 ];
 
 export const SUB_NAV: NavItem[] = [
-  { label: 'Destaque', href: '#', isActive: true },
   { label: 'Coluna Mariano Wikoli', href: '#' },
   { label: 'Política', href: '#' },
   { label: 'Geral', href: '#' },
-  { label: 'Vídeo', href: '#' },
 ];
 
 export const TOP_NEWS: NewsItem[] = [
@@ -50,6 +48,8 @@ export const BANNER_AVATAR = 'https://lh3.googleusercontent.com/aida-public/AB6A
 export const MIDDLE_FEATURE: NewsItem = {
   id: '5',
   title: "Bandeira inicia 'campanha' no PT para conseguir ser vice",
+  category: 'coluna-mariano',
+  section: 'política',
   image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCnjhyrJb7PBhHYX2jbHRrlxuApJo6JwRWdf3Yr8-q13nlmPoyuNJzvZUlzPjOD2z7GQX2ymhcvbnmNei1rrfEIV0NkCaWGt-5OFRmHVCiwRtWPQrcY6jGKU1Mmm_rRM-UPjH7LMah_9tfvMmXZOlGy0Lf-jjR5VQCYONsPrRR0uIxGbdTLNKyLJUHwoRIjiAJAd9tLqVVxlb06_ngpYOId-2sPJHScC03NFr5Os8qa-7J35hjpCv7ivqZwEAtoGbVM_MWSAFllbNBL'
 };
 
@@ -60,6 +60,8 @@ export const MIDDLE_LIST: NewsItem[] = [
     description: 'O prefeito anunciou que pedirá desfiliação do PT, após ter sido punido por declarar apoio a Ciro em 2026.',
     date: '22 de dezembro de 2025',
     time: '15h35',
+    category: 'coluna-mariano',
+    section: 'política',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBenwByWWf4nxc2Hybkavsd6gDsT89DXO-gYJECVrhOnAKIzhW0tkvjzDXivd3gZf3OuJQeHL2ApX2ECU54JYLg8_sVMmoZ3RvtHvEgrJZ1A1w7jlXoootm_8VjtBKc65LWq6Ey03e9W_s9CEKCzPlApAsMPW8tUYQBQ4mhyp96cY4xpJwVloQvCzDIb-OjZRwpMOIt4LixWIcwNMoB_YKToLfDQtrmg4KH9bDkh2PsJ0usOVJvvYc9vtCfMMvrGjsSl_Z6lQdZmgXU'
   },
   {
@@ -68,6 +70,8 @@ export const MIDDLE_LIST: NewsItem[] = [
     description: 'O prefeito de Cajueiro da Praia anunciou sua desfiliação após ter sido punido por apoio a Nogueira.',
     date: '22 de dezembro de 2025',
     time: '19h30',
+    category: 'coluna-mariano',
+    section: 'política',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDzgAqjURttgRGbPcgYaWkiSMv4CImD-2VdAAxQsjA8yhDOf2zWzBqqngPGqXcvsQlrRPD9HpM39maIOq61OlMERVmCasl99HxAhBlxpgUdtvwM4US8kxS9sYJMoDVk1kkzD9uZE9PzGA1YR4trNCStCDhlW--GkNGZ-cApezO1PeM5qiZTgt2BqC08c7zI0rImCiNhfVoBi9qgUpC5Yyi9mm-9uPJZFR9o6DQpHGmXoozb-8X6M-3C6wJhkubX-O_JrjFGZ5kqDIHS'
   },
   {
@@ -76,6 +80,8 @@ export const MIDDLE_LIST: NewsItem[] = [
     description: 'O gestor anunciou neste domingo (20), através das redes sociais, a saída da unidade de saúde.',
     date: '21 de dezembro de 2025',
     time: '13h27',
+    category: 'coluna-mariano',
+    section: 'geral',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA1SA9eEhu0hY7ugw5d6BmfcTFpU2LBhvyPmUDjRk4mEuLWqk9pNeMytqLvuUj0glv3WgmYoPjfsNksz7VSC_r92g0Q6EJaKVCqdUugfd13M8QE_d_hj8dqIcfmFWprwTuCFk5DnbwByAk3twgA7_qF7FSEsV4Yn0qFx1eZeDb4F9Br5DJk0ovySKy0VMcsLL0hBWQ4n-AQbt3zCcTfWg41w4b40s84HkELDZ3_ulVa5XKbL4EGyBQnX5ynGnPl9vmjHXWvfefU9WYT'
   }
 ];

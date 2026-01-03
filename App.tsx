@@ -18,6 +18,48 @@ import {
 } from './constants';
 
 const App: React.FC = () => {
+  const [activeSubNav, setActiveSubNav] = React.useState('Coluna Mariano Wikoli');
+  const [activeColumnTopic, setActiveColumnTopic] = React.useState<string | null>(null);
+
+  const columnItems = React.useMemo(
+    () => [MIDDLE_FEATURE, ...MIDDLE_LIST].filter((item) => item.category === 'coluna-mariano'),
+    []
+  );
+
+  const columnTopics = React.useMemo(() => {
+    const topics = new Set<string>();
+    columnItems.forEach((item) => {
+      if (item.section) topics.add(item.section);
+    });
+    return Array.from(topics);
+  }, [columnItems]);
+
+  const filteredMiddleList = React.useMemo(() => {
+    const isColumn = activeSubNav === 'Coluna Mariano Wikoli';
+    const items = [...MIDDLE_LIST];
+
+    if (isColumn) {
+      const filtered = items.filter((item) => item.category === 'coluna-mariano');
+      if (!activeColumnTopic) return filtered;
+      return filtered.filter((item) => item.section === activeColumnTopic);
+    }
+
+    const normalized = activeSubNav.toLowerCase();
+    return items.filter((item) => item.section?.toLowerCase() === normalized);
+  }, [activeSubNav, activeColumnTopic]);
+
+  const activeFeature = React.useMemo(() => {
+    const isColumn = activeSubNav === 'Coluna Mariano Wikoli';
+    if (isColumn) return MIDDLE_FEATURE;
+    const normalized = activeSubNav.toLowerCase();
+    if (MIDDLE_FEATURE.section?.toLowerCase() === normalized) return MIDDLE_FEATURE;
+    return MIDDLE_FEATURE;
+  }, [activeSubNav]);
+
+  React.useEffect(() => {
+    if (activeSubNav !== 'Coluna Mariano Wikoli') setActiveColumnTopic(null);
+  }, [activeSubNav]);
+
   return (
     <div className="min-h-screen flex flex-col font-sans font-bold text-gray-900">
       <Header />
@@ -68,16 +110,17 @@ const App: React.FC = () => {
         <div className="flex items-center justify-between border-b-2 border-gray-100 mb-6">
           <div className="flex gap-8 overflow-x-auto">
             {SUB_NAV.map((item) => (
-              <a
+              <button
                 key={item.label}
-                href={item.href}
-                className={`pb-2 border-b-2 font-black uppercase text-base tracking-wide whitespace-nowrap transition-all ${item.isActive
-                  ? 'border-black text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+                type="button"
+                className={`pb-2 border-b-2 font-black uppercase text-base tracking-wide whitespace-nowrap transition-all ${item.label === activeSubNav
+                    ? 'border-black text-gray-900'
+                    : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
                   }`}
+                onClick={() => setActiveSubNav(item.label)}
               >
                 {item.label}
-              </a>
+              </button>
             ))}
           </div>
           <button type="button" aria-label="Compartilhar" className="flex-shrink-0 text-gray-400 hover:text-primary transform -scale-x-100">
@@ -85,13 +128,41 @@ const App: React.FC = () => {
           </button>
         </div>
 
+        {activeSubNav === 'Coluna Mariano Wikoli' && columnTopics.length > 0 && (
+          <div className="flex gap-3 overflow-x-auto mb-6">
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-full border text-sm font-black whitespace-nowrap transition-colors ${activeColumnTopic === null
+                  ? 'bg-black text-white border-black'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                }`}
+              onClick={() => setActiveColumnTopic(null)}
+            >
+              Todas
+            </button>
+            {columnTopics.map((topic) => (
+              <button
+                key={topic}
+                type="button"
+                className={`px-3 py-1 rounded-full border text-sm font-black whitespace-nowrap transition-colors ${activeColumnTopic === topic
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                  }`}
+                onClick={() => setActiveColumnTopic(topic)}
+              >
+                {topic}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Middle Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-12">
           <div className="lg:col-span-5 h-full">
-            <NewsCard item={MIDDLE_FEATURE} variant="vertical" />
+            <NewsCard item={activeFeature} variant="vertical" />
           </div>
           <div className="lg:col-span-7 flex flex-col gap-1">
-            {MIDDLE_LIST.map((item) => (
+            {filteredMiddleList.map((item) => (
               <NewsListItem key={item.id} item={item} />
             ))}
           </div>

@@ -6,6 +6,7 @@ export interface NewsItem {
   date?: string;
   time?: string;
   category?: string;
+  section?: string;
   isLarge?: boolean;
 }
 
