@@ -27,10 +27,10 @@ const Header: React.FC = () => {
 
           <nav className="flex gap-6 text-sm font-bold text-gray-600 md:mb-1">
             {HEADER_NAV.map((item) => (
-              <a 
-                key={item.label} 
-                href={item.href} 
-                className="hover:text-primary transition-colors"
+              <a
+                key={item.label}
+                href={item.href}
+                className="font-bold hover:text-primary transition-colors"
               >
                 {item.label}
               </a>

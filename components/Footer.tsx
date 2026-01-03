@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         
-        <nav className="flex flex-wrap justify-center gap-8 text-sm text-gray-400 uppercase tracking-wider font-medium">
+        <nav className="flex flex-wrap justify-center gap-8 text-sm text-gray-400 uppercase tracking-wider font-bold">
           <a href="#" className="hover:text-white transition-colors">Destaque</a>
           <a href="#" className="hover:text-white transition-colors flex items-center gap-1">
             Coluna Mariano Wikoli
