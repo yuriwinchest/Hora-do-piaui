@@ -77,7 +77,7 @@ const Header: React.FC = () => {
                 key={item.label}
                 to={item.href}
                 className={({ isActive }) =>
-                  `hover:text-primary transition-colors ${isActive ? 'text-primary' : ''}`
+                  `hover:text-primary transition-colors text-black`
                 }
               >
                 {item.label}
