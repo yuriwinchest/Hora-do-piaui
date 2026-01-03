@@ -9,7 +9,6 @@ export const HEADER_NAV: NavItem[] = [
 ];
 
 export const SUB_NAV: NavItem[] = [
-  { label: 'Coluna Mariano Wikoli', href: '#' },
   { label: 'Política', href: '#' },
   { label: 'Geral', href: '#' },
 ];

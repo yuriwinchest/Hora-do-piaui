@@ -18,46 +18,18 @@ import {
 } from './constants';
 
 const App: React.FC = () => {
-  const [activeSubNav, setActiveSubNav] = React.useState('Coluna Mariano Wikoli');
-  const [activeColumnTopic, setActiveColumnTopic] = React.useState<string | null>(null);
-
-  const columnItems = React.useMemo(
-    () => [MIDDLE_FEATURE, ...MIDDLE_LIST].filter((item) => item.category === 'coluna-mariano'),
-    []
-  );
-
-  const columnTopics = React.useMemo(() => {
-    const topics = new Set<string>();
-    columnItems.forEach((item) => {
-      if (item.section) topics.add(item.section);
-    });
-    return Array.from(topics);
-  }, [columnItems]);
+  const [activeSubNav, setActiveSubNav] = React.useState('Política');
 
   const filteredMiddleList = React.useMemo(() => {
-    const isColumn = activeSubNav === 'Coluna Mariano Wikoli';
     const items = [...MIDDLE_LIST];
-
-    if (isColumn) {
-      const filtered = items.filter((item) => item.category === 'coluna-mariano');
-      if (!activeColumnTopic) return filtered;
-      return filtered.filter((item) => item.section === activeColumnTopic);
-    }
-
     const normalized = activeSubNav.toLowerCase();
     return items.filter((item) => item.section?.toLowerCase() === normalized);
-  }, [activeSubNav, activeColumnTopic]);
+  }, [activeSubNav]);
 
   const activeFeature = React.useMemo(() => {
-    const isColumn = activeSubNav === 'Coluna Mariano Wikoli';
-    if (isColumn) return MIDDLE_FEATURE;
     const normalized = activeSubNav.toLowerCase();
     if (MIDDLE_FEATURE.section?.toLowerCase() === normalized) return MIDDLE_FEATURE;
     return MIDDLE_FEATURE;
-  }, [activeSubNav]);
-
-  React.useEffect(() => {
-    if (activeSubNav !== 'Coluna Mariano Wikoli') setActiveColumnTopic(null);
   }, [activeSubNav]);
 
   return (
@@ -127,34 +99,6 @@ const App: React.FC = () => {
             <Reply size={24} />
           </button>
         </div>
-
-        {activeSubNav === 'Coluna Mariano Wikoli' && columnTopics.length > 0 && (
-          <div className="flex gap-3 overflow-x-auto mb-6">
-            <button
-              type="button"
-              className={`px-3 py-1 rounded-full border text-sm font-black whitespace-nowrap transition-colors ${activeColumnTopic === null
-                  ? 'bg-black text-white border-black'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
-                }`}
-              onClick={() => setActiveColumnTopic(null)}
-            >
-              Todas
-            </button>
-            {columnTopics.map((topic) => (
-              <button
-                key={topic}
-                type="button"
-                className={`px-3 py-1 rounded-full border text-sm font-black whitespace-nowrap transition-colors ${activeColumnTopic === topic
-                    ? 'bg-black text-white border-black'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
-                  }`}
-                onClick={() => setActiveColumnTopic(topic)}
-              >
-                {topic}
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Middle Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-12">
