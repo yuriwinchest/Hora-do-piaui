@@ -17,14 +17,11 @@ const NewsListItem: React.FC<NewsListItemProps> = ({ item }) => {
         <h3 className="text-lg font-bold font-serif leading-tight group-hover:text-primary transition-colors">
           {item.title}
         </h3>
-        {item.date && item.time && (
+        {item.time && (
           <p className="text-xs text-gray-500 font-sans">
-            {item.date} | {item.time}
+            {item.time}
           </p>
         )}
-        <p className="text-sm text-gray-600 line-clamp-2 font-sans leading-snug">
-          {item.description}
-        </p>
       </div>
     </article>
   );
