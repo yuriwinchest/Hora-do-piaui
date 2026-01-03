@@ -13,6 +13,11 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
     return (
       <Link to={`/noticia/${item.id}`} className="group block">
         <article className="flex gap-4 cursor-pointer items-start">
+          <img
+            src={item.image}
+            alt={item.title}
+            className="w-24 h-24 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
+          />
           <div className="flex-1">
             <h3 className="text-lg font-bold font-serif leading-snug mb-2 group-hover:text-primary transition-colors">
               {item.title}
@@ -26,11 +31,6 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
               <span className="text-[10px] text-gray-400 uppercase tracking-wide">{item.time}</span>
             )}
           </div>
-          <img
-            src={item.image}
-            alt={item.title}
-            className="w-24 h-24 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
-          />
         </article>
       </Link>
     );
