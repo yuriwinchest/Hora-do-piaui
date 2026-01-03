@@ -71,7 +71,7 @@ const Header: React.FC = () => {
             </Link>
           </div>
 
-          <nav className="hidden md:flex flex-wrap justify-center gap-8 text-lg font-black text-gray-900 md:mb-1">
+          <nav className="hidden md:flex flex-wrap justify-center gap-8 text-lg font-black text-black md:mb-1">
             {HEADER_NAV.map((item) => (
               <NavLink
                 key={item.label}
