@@ -25,12 +25,12 @@ const Header: React.FC = () => {
             </div>
           </a>
 
-          <nav className="flex gap-6 text-sm font-bold text-gray-600 md:mb-1">
+          <nav className="flex flex-wrap justify-center gap-6 text-sm md:text-base font-black text-gray-600 md:mb-1">
             {HEADER_NAV.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
-                className="font-bold hover:text-primary transition-colors"
+                className="hover:text-primary transition-colors"
               >
                 {item.label}
               </a>

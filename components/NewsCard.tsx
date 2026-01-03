@@ -35,7 +35,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
 
   return (
     <article className="group cursor-pointer h-full flex flex-col">
-      <div className="overflow-hidden rounded-lg mb-3 bg-gray-100 shadow-md relative flex-grow">
+      <div className="overflow-hidden rounded-lg mb-3 bg-gray-100 shadow-md relative aspect-[16/9] md:aspect-[4/3]">
         <img 
           src={item.image} 
           alt={item.title} 

@@ -1,17 +1,19 @@
 import { NewsItem, VideoItem, NavItem } from './types';
 
 export const HEADER_NAV: NavItem[] = [
-  { label: 'Tecnologia', href: '#' },
-  { label: 'Economia', href: '#' },
-  { label: 'Mídia', href: '#' },
-  { label: 'Dinheiro', href: '#' },
-  { label: 'DealBook', href: '#' },
+  { label: 'Destaque', href: '#' },
+  { label: 'Coluna Mariano Wikoli', href: '#' },
+  { label: 'Política', href: '#' },
+  { label: 'Geral', href: '#' },
+  { label: 'Vídeo', href: '#' },
 ];
 
 export const SUB_NAV: NavItem[] = [
-  { label: 'Mariano Wikoli', href: '#', isActive: true },
-  { label: 'Legislativo', href: '#' },
-  { label: 'Executivo', href: '#' },
+  { label: 'Destaque', href: '#', isActive: true },
+  { label: 'Coluna Mariano Wikoli', href: '#' },
+  { label: 'Política', href: '#' },
+  { label: 'Geral', href: '#' },
+  { label: 'Vídeo', href: '#' },
 ];
 
 export const TOP_NEWS: NewsItem[] = [
