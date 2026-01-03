@@ -144,7 +144,14 @@ const App: React.FC = () => {
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-200 pb-2">
             Assista aos vídeos de hoje
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="md:hidden -mx-4 px-4 overflow-x-auto flex gap-4 snap-x snap-mandatory pb-2">
+            {VIDEOS.map((video) => (
+              <div key={video.id} className="w-44 flex-shrink-0 snap-start">
+                <VideoCard item={video} />
+              </div>
+            ))}
+          </div>
+          <div className="hidden md:grid grid-cols-3 lg:grid-cols-5 gap-4">
             {VIDEOS.map((video) => (
               <VideoCard key={video.id} item={video} />
             ))}
