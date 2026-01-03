@@ -166,7 +166,7 @@ const HomePage: React.FC = () => {
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
-                  <h2 className="text-xl font-bold font-serif leading-snug group-hover:text-primary transition-colors">
+                  <h2 className="text-xl text-black font-bold font-serif leading-snug group-hover:text-primary transition-colors">
                     {item.title}
                   </h2>
                 </div>
