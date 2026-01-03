@@ -18,15 +18,19 @@ import {
 } from './constants';
 
 const App: React.FC = () => {
-  const [activeSubNav, setActiveSubNav] = React.useState('Política');
+  const [activeSubNav, setActiveSubNav] = React.useState('Coluna Mariano Wikoli');
 
   const filteredMiddleList = React.useMemo(() => {
     const items = [...MIDDLE_LIST];
+    if (activeSubNav === 'Coluna Mariano Wikoli') {
+      return items.filter((item) => item.category === 'coluna-mariano');
+    }
     const normalized = activeSubNav.toLowerCase();
     return items.filter((item) => item.section?.toLowerCase() === normalized);
   }, [activeSubNav]);
 
   const activeFeature = React.useMemo(() => {
+    if (activeSubNav === 'Coluna Mariano Wikoli') return MIDDLE_FEATURE;
     const normalized = activeSubNav.toLowerCase();
     if (MIDDLE_FEATURE.section?.toLowerCase() === normalized) return MIDDLE_FEATURE;
     return MIDDLE_FEATURE;
@@ -86,8 +90,8 @@ const App: React.FC = () => {
                 key={item.label}
                 type="button"
                 className={`pb-2 border-b-2 font-black uppercase text-base tracking-wide whitespace-nowrap transition-all ${item.label === activeSubNav
-                    ? 'border-black text-gray-900'
-                    : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+                  ? 'border-black text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
                   }`}
                 onClick={() => setActiveSubNav(item.label)}
               >
