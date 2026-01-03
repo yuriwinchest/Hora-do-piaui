@@ -1,5 +1,6 @@
 import React from 'react';
 import { Menu, X } from 'lucide-react';
+import { Link, NavLink } from 'react-router-dom';
 import { HEADER_NAV } from '../constants';
 
 const Header: React.FC = () => {
@@ -26,14 +27,16 @@ const Header: React.FC = () => {
             </div>
             <nav className="mt-2 flex flex-col gap-5 text-lg font-black text-gray-800">
               {HEADER_NAV.map((item) => (
-                <a
+                <NavLink
                   key={item.label}
-                  href={item.href}
-                  className="hover:text-primary transition-colors"
+                  to={item.href}
+                  className={({ isActive }) =>
+                    `hover:text-primary transition-colors ${isActive ? 'text-primary' : ''}`
+                  }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}
-                </a>
+                </NavLink>
               ))}
             </nav>
           </div>
@@ -53,7 +56,7 @@ const Header: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-4 md:mb-0">
           {/* Logo Construction */}
           <div className="w-full flex items-center justify-center md:w-auto md:justify-start">
-            <a href="#" className="flex items-center gap-2 group hover:opacity-90 transition-opacity">
+            <Link to="/" className="flex items-center gap-2 group hover:opacity-90 transition-opacity">
               <div className="flex items-center">
                 <span className="text-6xl font-black text-[#00C24A] tracking-tighter leading-none font-sans">H</span>
                 <div className="relative w-10 h-10 border-[4px] border-[#00C24A] rounded-full mx-1 flex items-center justify-center bg-white">
@@ -65,18 +68,20 @@ const Header: React.FC = () => {
                 <span className="text-4xl font-black text-[#00C24A] tracking-tighter font-sans">HORA</span>
                 <span className="text-xl font-bold text-[#00C24A] tracking-tight -mt-1 font-sans">piauí.com</span>
               </div>
-            </a>
+            </Link>
           </div>
 
           <nav className="hidden md:flex flex-wrap justify-center gap-6 text-sm md:text-base font-black text-gray-600 md:mb-1">
             {HEADER_NAV.map((item) => (
-              <a
+              <NavLink
                 key={item.label}
-                href={item.href}
-                className="hover:text-primary transition-colors"
+                to={item.href}
+                className={({ isActive }) =>
+                  `hover:text-primary transition-colors ${isActive ? 'text-primary' : ''}`
+                }
               >
                 {item.label}
-              </a>
+              </NavLink>
             ))}
           </nav>
         </div>

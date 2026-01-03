@@ -1,17 +1,17 @@
 import { NewsItem, VideoItem, NavItem } from './types';
 
 export const HEADER_NAV: NavItem[] = [
-  { label: 'Destaque', href: '#' },
-  { label: 'Coluna Mariano Wikoli', href: '#' },
-  { label: 'Política', href: '#' },
-  { label: 'Geral', href: '#' },
-  { label: 'Vídeo', href: '#' },
+  { label: 'Destaque', href: '/' },
+  { label: 'Coluna Mariano Wikoli', href: '/coluna-mariano' },
+  { label: 'Política', href: '/politica' },
+  { label: 'Geral', href: '/geral' },
+  { label: 'Vídeo', href: '/videos' },
 ];
 
 export const SUB_NAV: NavItem[] = [
-  { label: 'Coluna Mariano Wikoli', href: '#' },
-  { label: 'Política', href: '#' },
-  { label: 'Geral', href: '#' },
+  { label: 'Coluna Mariano Wikoli', href: '/coluna-mariano' },
+  { label: 'Política', href: '/politica' },
+  { label: 'Geral', href: '/geral' },
 ];
 
 export const TOP_NEWS: NewsItem[] = [
@@ -83,6 +83,16 @@ export const MIDDLE_LIST: NewsItem[] = [
     category: 'coluna-mariano',
     section: 'geral',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA1SA9eEhu0hY7ugw5d6BmfcTFpU2LBhvyPmUDjRk4mEuLWqk9pNeMytqLvuUj0glv3WgmYoPjfsNksz7VSC_r92g0Q6EJaKVCqdUugfd13M8QE_d_hj8dqIcfmFWprwTuCFk5DnbwByAk3twgA7_qF7FSEsV4Yn0qFx1eZeDb4F9Br5DJk0ovySKy0VMcsLL0hBWQ4n-AQbt3zCcTfWg41w4b40s84HkELDZ3_ulVa5XKbL4EGyBQnX5ynGnPl9vmjHXWvfefU9WYT'
+  },
+  {
+    id: '9',
+    title: 'Assembleia discute mudanças no calendário eleitoral e impacto nos municípios',
+    description: 'Parlamentares avaliam ajustes no cronograma e prazos que podem alterar a organização das campanhas locais.',
+    date: '23 de dezembro de 2025',
+    time: '10h12',
+    category: 'coluna-mariano',
+    section: 'política',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA34dNjzCBL4e1bXDK4l3yjWsRFmQSK6wPO0FiU5C140Urzq9QUoYDK6i-p_i99A_ibvUnYtgTVM-ZHESPM86tUsxsSxjFE4ZyfgMrQdK6BqS79FJ4rw45eQWyJdskgllhhzEqTUItOyRWeG4oCEidEmEB9uq7MHcr1SKS5Zet2rVqdAjXD8-iatDUHVEAez2BEOPoH31RW3eZSlNMK5mTFYiwApDevJ8jRbGxVWv9BV0amGSgLKOL4ZuUx_nDaHXIwrIcYI4xen6tK'
   }
 ];
 
