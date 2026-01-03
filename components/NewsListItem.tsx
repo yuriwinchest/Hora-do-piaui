@@ -7,14 +7,14 @@ interface NewsListItemProps {
 
 const NewsListItem: React.FC<NewsListItemProps> = ({ item }) => {
   return (
-    <article className="flex gap-4 group cursor-pointer border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+    <article className="flex gap-3 group cursor-pointer border-b border-gray-100 pb-3 last:border-0 last:pb-0">
       <img 
         src={item.image} 
         alt={item.title} 
-        className="w-32 h-24 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
+        className="w-28 h-20 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
       />
       <div>
-        <h3 className="text-lg font-bold font-serif leading-tight mb-2 group-hover:text-primary transition-colors">
+        <h3 className="text-lg font-bold font-serif leading-tight mb-1 group-hover:text-primary transition-colors">
           {item.title}
         </h3>
         {item.date && item.time && (
@@ -22,7 +22,7 @@ const NewsListItem: React.FC<NewsListItemProps> = ({ item }) => {
             {item.date} | {item.time}
           </p>
         )}
-        <p className="text-sm text-gray-600 line-clamp-2 font-sans">
+        <p className="text-sm text-gray-600 line-clamp-2 font-sans leading-snug">
           {item.description}
         </p>
       </div>
