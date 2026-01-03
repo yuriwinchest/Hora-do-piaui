@@ -14,7 +14,7 @@ const NewsListItem: React.FC<NewsListItemProps> = ({ item, className }) => {
         <img
           src={item.image}
           alt={item.title}
-          className="w-28 h-20 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
+          className="w-32 h-24 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
         />
         <div className="flex-1">
           <h3 className="text-lg text-black font-bold font-serif leading-tight group-hover:text-primary transition-colors">
