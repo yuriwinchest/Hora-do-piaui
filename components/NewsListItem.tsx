@@ -10,7 +10,7 @@ interface NewsListItemProps {
 const NewsListItem: React.FC<NewsListItemProps> = ({ item, className }) => {
   return (
     <Link to={`/noticia/${item.id}`} className={`group block ${className ?? ''}`}>
-      <article className="flex gap-3 cursor-pointer py-2 items-center h-full">
+      <article className="flex gap-3 cursor-pointer py-1.5 items-center h-full">
         <img
           src={item.image}
           alt={item.title}

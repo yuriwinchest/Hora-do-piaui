@@ -6,9 +6,10 @@ interface NewsCardProps {
   item: NewsItem;
   variant?: 'vertical' | 'horizontal' | 'compact';
   showDescription?: boolean;
+  imageClassName?: string;
 }
 
-const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDescription = false }) => {
+const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDescription = false, imageClassName }) => {
   if (variant === 'compact') {
     return (
       <Link to={`/noticia/${item.id}`} className="group block">
@@ -39,7 +40,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
   return (
     <Link to={`/noticia/${item.id}`} className="group block h-full">
       <article className="cursor-pointer h-full flex flex-col">
-        <div className="overflow-hidden rounded-lg mb-3 bg-gray-100 shadow-md relative aspect-[16/9] md:aspect-[4/3]">
+        <div className={`overflow-hidden rounded-lg mb-3 bg-gray-100 shadow-md relative ${imageClassName ?? 'aspect-[16/9] md:aspect-[4/3]'}`}>
           <img
             src={item.image}
             alt={item.title}
