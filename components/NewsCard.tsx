@@ -17,7 +17,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
           <img
             src={item.image}
             alt={item.title}
-            className="w-24 h-24 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
+            className="w-32 h-24 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
           />
           <div className="flex-1">
             <h3 className="text-lg text-black font-bold font-serif leading-snug mb-2 group-hover:text-primary transition-colors">
