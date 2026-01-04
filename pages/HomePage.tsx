@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { NewsItem, HomeLayoutConfig } from '../types';
 import NewsCard from '../components/NewsCard';
-import NewsListItem from '../components/NewsListItem';
 import VideoCard from '../components/VideoCard';
-import GamesBanner from '../components/GamesBanner';
+import TabbedNewsSection from '../components/TabbedNewsSection';
 import AdBanner from '../components/AdBanner';
 import { supabase } from '../lib/supabase';
 
@@ -77,31 +76,14 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
             {/* Banner 7GAMES (Component Restored) */}
             <GamesBanner />
 
-            {/* Sub-nav (Exact Match) */}
-            <div className="flex gap-6 border-b border-gray-100 mb-8 pb-2 text-[10px] font-black uppercase tracking-widest">
-                <span className="text-black border-b-2 border-black pb-2 cursor-pointer">Coluna Mariano Wikoli</span>
-                <span className="text-gray-400 cursor-pointer hover:text-black">Política</span>
-                <span className="text-gray-400 cursor-pointer hover:text-black">Geral</span>
-            </div>
-
-            {/* Seção Mariano (1 Main + 4 List) */}
-            <section className="grid grid-cols-12 gap-8 mb-16">
-                <div className="col-span-12 lg:col-span-8">
-                    {marianoMain && (
-                        <Link to={`/noticia/${marianoMain.id}`} className="group block">
-                            <div className="overflow-hidden rounded mb-4">
-                                <img src={marianoMain.image} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
-                            </div>
-                            <h3 className="text-2xl font-bold font-serif group-hover:text-[#16a34a] transition-colors">{marianoMain.title}</h3>
-                        </Link>
-                    )}
-                </div>
-                <div className="col-span-12 lg:col-span-4 divide-y divide-gray-100">
-                    {marianoList.map(news => (
-                        <NewsListItem key={news.id} item={news} />
-                    ))}
-                </div>
-            </section>
+            {/* Seção Tabbed (Mariano / Política / Geral) */}
+            <TabbedNewsSection
+                items={items}
+                marianoConfig={{
+                    mainId: config.marianoMainId,
+                    listIds: config.marianoListIds
+                }}
+            />
 
             {/* Banner Casa Legal (Component Restored) */}
             <AdBanner />
