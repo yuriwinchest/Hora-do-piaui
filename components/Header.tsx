@@ -54,20 +54,9 @@ const Header: React.FC = () => {
         </button>
 
         <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-4 md:mb-0">
-          {/* Logo Construction */}
           <div className="w-full flex items-center justify-center md:w-auto md:justify-start">
-            <Link to="/" className="flex items-center gap-2 group hover:opacity-90 transition-opacity">
-              <div className="flex items-center">
-                <span className="text-7xl font-black text-[#00C24A] tracking-tighter leading-none font-sans">H</span>
-                <div className="relative w-10 h-10 border-[4px] border-[#00C24A] rounded-full mx-1 flex items-center justify-center bg-white">
-                  <div className="absolute w-1 h-3.5 bg-[#00C24A] top-1.5 rounded-full origin-bottom"></div>
-                  <div className="absolute w-1 h-2.5 bg-[#00C24A] top-1/2 left-1/2 -translate-x-1/2 origin-top rounded-full rotate-90 -translate-y-[2px]"></div>
-                </div>
-              </div>
-              <div className="flex flex-col justify-center leading-none -ml-1">
-                <span className="text-5xl font-black text-[#00C24A] tracking-tighter font-sans">HORA</span>
-                <span className="text-xl font-bold text-[#00C24A] tracking-tight -mt-1 font-sans">piauí.com</span>
-              </div>
+            <Link to="/" className="group hover:opacity-90 transition-opacity">
+              <img src="/assets/logo.png" alt="Hora Piauí" className="h-16 md:h-20 w-auto object-contain" />
             </Link>
           </div>
 
