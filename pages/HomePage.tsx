@@ -48,7 +48,7 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
 
             {/* Grid Destaque: 2 Colunas (2 Main + Sidebar) */}
             <section className="grid grid-cols-12 gap-6 mb-12">
-                <div className="col-span-12 lg:col-span-8 grid grid-cols-2 gap-4">
+                <div className="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
                     {effectiveLeftItems.map(news => (
                         <Link to={`/noticia/${news.id}`} key={news.id} className="group block">
                             <div className="overflow-hidden rounded mb-2">
