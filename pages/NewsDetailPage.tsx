@@ -8,13 +8,6 @@ interface NewsDetailPageProps {
     items: NewsItem[];
 }
 
-// Temporary Mock Author until DB schema is updated
-const MOCK_AUTHOR = {
-    name: "Redação Hora do Piauí",
-    role: "Jornalismo",
-    image: "/assets/logo.png" // Fallback to logo
-};
-
 const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();

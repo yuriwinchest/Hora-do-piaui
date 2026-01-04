@@ -123,6 +123,7 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
                     onClick={() => navigate('/admin/videos')}
                     className="p-2 hover:bg-white/50 rounded-xl transition-colors"
                     aria-label="Voltar para a lista de vídeos"
+                >   aria-label="Voltar para a lista de vídeos"
                 >
                     <ArrowLeft size={24} />
                 </button>
@@ -255,8 +256,9 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
 
                     {/* Tag Color */}
                     <div className="space-y-2">
-                        <label className="text-sm font-black uppercase tracking-wider text-gray-500">Cor da Tag (Classe Tailwind)</label>
+                        <label htmlFor="tagColor" className="text-sm font-black uppercase tracking-wider text-gray-500">Cor da Tag (Classe Tailwind)</label>
                         <select
+                            id="tagColor"
                             name="tagColor"
                             value={formData.tagColor}
                             onChange={handleChange}

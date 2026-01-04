@@ -222,8 +222,9 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Categoria</label>
+                                <label htmlFor="category" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Categoria</label>
                                 <select
+                                    id="category"
                                     name="category"
                                     value={formData.category}
                                     onChange={handleChange}
@@ -249,10 +250,11 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                            <label htmlFor="instagramUrl" className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
                                 Link do Instagram da Matéria
                             </label>
                             <input
+                                id="instagramUrl"
                                 type="text"
                                 name="instagramUrl"
                                 value={formData.instagramUrl || ''}

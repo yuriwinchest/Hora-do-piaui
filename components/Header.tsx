@@ -65,9 +65,7 @@ const Header: React.FC = () => {
               <NavLink
                 key={item.label}
                 to={item.href}
-                className={({ isActive }) =>
-                  `hover:text-primary transition-colors text-black`
-                }
+                className="hover:text-primary transition-colors text-black"
               >
                 {item.label}
               </NavLink>
