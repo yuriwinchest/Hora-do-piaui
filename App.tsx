@@ -535,6 +535,9 @@ const App: React.FC = () => {
     fetchData();
   }, []);
 
+  // Filter published news for the public pages
+  const publishedNews = React.useMemo(() => allNews.filter(n => n.status === 'published'), [allNews]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -654,9 +657,6 @@ const App: React.FC = () => {
     const item = allNews.find(n => n.id === id);
     return <NewsForm onSave={handleSaveNews} existingItem={item} />;
   };
-
-  // Filter published news for the public pages
-  const publishedNews = React.useMemo(() => allNews.filter(n => n.status === 'published'), [allNews]);
 
   return (
     <div className="min-h-screen flex flex-col font-sans font-bold text-gray-900">
