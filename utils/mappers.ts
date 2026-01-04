@@ -15,6 +15,7 @@ export const mapNewsFromDb = (n: any): NewsItem => ({
     authorName: n.author_name,
     authorAvatar: n.author_avatar,
     authorBio: n.author_bio, // New field mapping
+    authorRole: n.author_role,
     videoUrl: n.video_url, // YouTube URL
     instagramUrl: n.instagram_url,
 });

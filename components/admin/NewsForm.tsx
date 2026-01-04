@@ -35,7 +35,8 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                 ...prev,
                 authorName: profile.full_name || prev.authorName,
                 authorAvatar: profile.avatar_url || prev.authorAvatar,
-                authorBio: profile.bio || prev.authorBio
+                authorBio: profile.bio || prev.authorBio,
+                authorRole: profile.role || prev.authorRole
             }));
         }
     }, [profile, existingItem]);
@@ -75,7 +76,8 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
             status,
             authorName: profile?.full_name || formData.authorName,
             authorAvatar: profile?.avatar_url || formData.authorAvatar,
-            authorBio: profile?.bio || formData.authorBio
+            authorBio: profile?.bio || formData.authorBio,
+            authorRole: profile?.role || formData.authorRole
         };
 
         onSave(newItem);

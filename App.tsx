@@ -13,6 +13,7 @@ import AdminNewsEditor from './pages/admin/AdminNewsEditor';
 import AdminVideosPage from './pages/admin/AdminVideosPage';
 import AdminVideoEditor from './pages/admin/AdminVideoEditor';
 import AdminLayoutPage from './pages/admin/AdminLayoutPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import AdminLayout from './components/admin/AdminLayout';
 import LoginPage from './pages/admin/LoginPage';
 import { useNews } from './hooks/useNews';
@@ -141,6 +142,12 @@ function App() {
         <Route path="/admin/noticia/nova" element={
           <AdminLayout>
             <AdminNewsEditor items={allNews} onSave={saveNews} />
+          </AdminLayout>
+        } />
+
+        <Route path="/admin/configuracoes" element={
+          <AdminLayout>
+            <AdminSettingsPage />
           </AdminLayout>
         } />
 

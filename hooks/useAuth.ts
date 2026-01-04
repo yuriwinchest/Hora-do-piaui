@@ -8,6 +8,7 @@ export interface Profile {
     avatar_url: string | null;
     bio: string | null;
     email: string | null;
+    role: string | null;
 }
 
 export function useAuth() {

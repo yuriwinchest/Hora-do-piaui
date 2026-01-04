@@ -139,6 +139,7 @@ export const useNews = () => {
             author_name: item.authorName,
             author_avatar: item.authorAvatar,
             author_bio: item.authorBio,
+            author_role: item.authorRole,
             instagram_url: item.instagramUrl
         };
 

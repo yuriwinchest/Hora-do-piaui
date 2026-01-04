@@ -65,7 +65,7 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                             </p>
                         ) : (
                             <p className="text-sm md:text-base text-gray-500 font-medium bg-gray-100 inline-block px-3 py-1 rounded-full uppercase tracking-wide">
-                                Jornalismo
+                                {news.authorRole || "Jornalismo"}
                             </p>
                         )}
                     </div>
