@@ -210,14 +210,43 @@ const HomePage: React.FC = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-12 items-stretch">
-        <div className="lg:col-span-5 h-full">
-          <NewsCard item={MIDDLE_FEATURE} variant="vertical" imageClassName="aspect-[7/8]" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 mb-12 items-start">
+        {/* 1. Main Photo */}
+        <div className="lg:col-span-5 order-1 w-full">
+          <Link to={`/noticia/${MIDDLE_FEATURE.id}`} className="group block">
+            <div className="overflow-hidden rounded-lg bg-gray-100 shadow-md aspect-[7/8] relative">
+              <img
+                src={MIDDLE_FEATURE.image}
+                alt={MIDDLE_FEATURE.title}
+                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 filter brightness-105 contrast-105 absolute inset-0"
+              />
+            </div>
+          </Link>
         </div>
-        <div className="lg:col-span-7 h-full flex flex-col divide-y divide-gray-100">
+
+        {/* 2. Main Title (Mobile only here, Desktop below) */}
+        <div className="lg:hidden order-2 mt-4 mb-6">
+          <Link to={`/noticia/${MIDDLE_FEATURE.id}`} className="group block">
+            <h2 className="text-2xl text-black font-bold font-serif leading-snug group-hover:text-primary transition-colors">
+              {MIDDLE_FEATURE.title}
+            </h2>
+          </Link>
+        </div>
+
+        {/* 3. Side List - Aligns with photo height on desktop */}
+        <div className="lg:col-span-7 order-3 lg:order-2 self-stretch flex flex-col justify-between py-0">
           {homeMiddleList.slice(0, 4).map((item) => (
-            <NewsListItem key={item.id} item={item} className="flex-1" />
+            <NewsListItem key={item.id} item={item} />
           ))}
+        </div>
+
+        {/* 4. Main Title (Desktop only here) */}
+        <div className="hidden lg:block lg:col-span-5 order-4 mt-3">
+          <Link to={`/noticia/${MIDDLE_FEATURE.id}`} className="group block">
+            <h2 className="text-xl text-black font-bold font-serif leading-snug group-hover:text-primary transition-colors">
+              {MIDDLE_FEATURE.title}
+            </h2>
+          </Link>
         </div>
       </div>
 
