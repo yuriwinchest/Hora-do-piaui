@@ -148,7 +148,8 @@ export const useNews = () => {
         const { data, error } = await query.select().single();
 
         if (error) {
-            alert('Erro ao salvar notícia: ' + error.message);
+            console.error('FINAL UPDATE/INSERT ERROR:', error);
+            alert(`Erro ao salvar notícia:\nMessage: ${error.message}\nCode: ${error.code || 'N/A'}\nDetails: ${error.details || 'N/A'}\nHint: ${error.hint || 'N/A'}`);
             return;
         }
 
