@@ -160,6 +160,23 @@ const HomePage: React.FC<{ items: NewsItem[]; config: HomeLayoutConfig }> = ({ i
     allItems.find(n => n.id === config.heroMainId) || allItems[0],
     [allItems, config.heroMainId]);
 
+  if (allNews.length === 0 && !loading && !fetchError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white p-4 text-center">
+        <div className="max-w-md">
+          <h2 className="text-xl font-black text-gray-900 mb-2">Inicializando Site</h2>
+          <p className="text-gray-500 font-bold mb-4">Estamos preparando as notícias para você. Se este é o primeiro acesso, o banco está sendo configurado.</p>
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback for homepage slots during initialization
+  if (!middleFeature && publishedNews.length === 0 && !loading && !fetchError) {
+    return <div className="p-20 text-center font-bold">Nenhuma notícia publicada encontrada.</div>;
+  }
+
   const marianoList = React.useMemo(() =>
     allItems.filter(n => (config.marianoListIds || []).includes(n.id)),
     [allItems, config.marianoListIds]);
@@ -232,24 +249,28 @@ const HomePage: React.FC<{ items: NewsItem[]; config: HomeLayoutConfig }> = ({ i
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 mb-12 items-start">
         {/* 1. Main Photo */}
         <div className="lg:col-span-5 order-1 w-full">
-          <Link to={`/noticia/${middleFeature.id}`} className="group block">
-            <div className="overflow-hidden rounded-lg bg-gray-100 shadow-md aspect-[7/8] relative">
-              <img
-                src={middleFeature.image}
-                alt={middleFeature.title}
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 filter brightness-105 contrast-105 absolute inset-0"
-              />
-            </div>
-          </Link>
+          {middleFeature && (
+            <Link to={`/noticia/${middleFeature.id}`} className="group block">
+              <div className="overflow-hidden rounded-lg bg-gray-100 shadow-md aspect-[7/8] relative">
+                <img
+                  src={middleFeature.image}
+                  alt={middleFeature.title}
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 filter brightness-105 contrast-105 absolute inset-0"
+                />
+              </div>
+            </Link>
+          )}
         </div>
 
         {/* 2. Main Title (Mobile only here, Desktop below) */}
         <div className="lg:hidden order-2 mt-4 mb-6">
-          <Link to={`/noticia/${middleFeature.id}`} className="group block">
-            <h2 className="text-2xl text-black font-bold font-serif leading-snug group-hover:text-primary transition-colors">
-              {middleFeature.title}
-            </h2>
-          </Link>
+          {middleFeature && (
+            <Link to={`/noticia/${middleFeature.id}`} className="group block">
+              <h2 className="text-2xl text-black font-bold font-serif leading-snug group-hover:text-primary transition-colors">
+                {middleFeature.title}
+              </h2>
+            </Link>
+          )}
         </div>
 
         {/* 3. Side List - Aligns with photo height on desktop */}
@@ -443,12 +464,12 @@ const AdminDashboard: React.FC<{ items: NewsItem[] }> = ({ items }) => {
 
 const App: React.FC = () => {
   const [homeConfig, setHomeConfig] = React.useState<HomeLayoutConfig>({
-    mainHeadline: 'Carregando...',
-    heroMainId: '',
-    heroTopIds: [],
-    heroSideIds: [],
-    marianoMainId: '',
-    marianoListIds: []
+    mainHeadline: 'Bem-vindo ao Hora do Piauí',
+    heroMainId: 'f47ac10b-58cc-4372-a567-0e02b2c3d475',
+    heroTopIds: ['f47ac10b-58cc-4372-a567-0e02b2c3d471', 'f47ac10b-58cc-4372-a567-0e02b2c3d472'],
+    heroSideIds: ['f47ac10b-58cc-4372-a567-0e02b2c3d473', 'f47ac10b-58cc-4372-a567-0e02b2c3d474'],
+    marianoMainId: 'f47ac10b-58cc-4372-a567-0e02b2c3d476',
+    marianoListIds: ['f47ac10b-58cc-4372-a567-0e02b2c3d477', 'f47ac10b-58cc-4372-a567-0e02b2c3d478', 'f47ac10b-58cc-4372-a567-0e02b2c3d479']
   });
 
   const [allNews, setAllNews] = React.useState<NewsItem[]>([]);
