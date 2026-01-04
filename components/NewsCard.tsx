@@ -20,7 +20,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
             className="w-32 h-24 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
           />
           <div className="flex-1">
-            <h3 className="text-lg text-black font-bold font-serif leading-snug mb-2 group-hover:text-primary transition-colors">
+            <h3 className="text-lg text-black font-black font-serif leading-snug mb-2 group-hover:text-primary transition-colors">
               {item.title}
             </h3>
             {showDescription && item.description && (
@@ -47,7 +47,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 filter brightness-105 contrast-105 absolute inset-0"
           />
         </div>
-        <h2 className="text-xl text-black font-bold font-serif leading-snug group-hover:text-primary transition-colors">
+        <h2 className="text-xl text-black font-black font-serif leading-snug group-hover:text-primary transition-colors">
           {item.title}
         </h2>
       </article>

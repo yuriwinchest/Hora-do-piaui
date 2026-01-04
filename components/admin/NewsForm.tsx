@@ -211,6 +211,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                                 className="hidden"
                                 accept="image/*"
                                 onChange={handleImageUpload}
+                                aria-label="Upload de imagem de capa"
                             />
                             <input
                                 type="text"
@@ -240,8 +241,9 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Seção (Tag)</label>
+                                <label htmlFor="section" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Seção (Tag)</label>
                                 <input
+                                    id="section"
                                     type="text"
                                     name="section"
                                     value={formData.section}

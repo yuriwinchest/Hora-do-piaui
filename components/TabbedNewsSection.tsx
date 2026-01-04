@@ -24,7 +24,7 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
         fiveDaysAgo.setDate(now.getDate() - 5);
 
         // 1. Filter: Politics category + Last 5 days (relaxed to just Politics for demo if dates are strings)
-        let filtered = items.filter(i => 
+        let filtered = items.filter(i =>
             (i.category?.toLowerCase() === 'política' || i.section?.toLowerCase() === 'política')
         );
 
@@ -54,14 +54,14 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
                 : items.slice(5, 9);
             return { mainItem: main, listItems: list };
         } else if (activeTab === 'politica') {
-            return { 
-                mainItem: politicsItems[0], 
-                listItems: politicsItems.slice(1, 5) 
+            return {
+                mainItem: politicsItems[0],
+                listItems: politicsItems.slice(1, 5)
             };
         } else {
-             return { 
-                mainItem: generalItems[0], 
-                listItems: generalItems.slice(1, 5) 
+            return {
+                mainItem: generalItems[0],
+                listItems: generalItems.slice(1, 5)
             };
         }
     }, [activeTab, items, marianoConfig, politicsItems, generalItems]);
@@ -70,19 +70,19 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
         <section className="mb-16">
             {/* Tabs Navigation */}
             <div className="flex gap-6 border-b border-gray-100 mb-8 pb-2 text-[10px] font-black uppercase tracking-widest overflow-x-auto">
-                <button 
+                <button
                     onClick={() => setActiveTab('mariano')}
                     className={`pb-2 transition-colors whitespace-nowrap ${activeTab === 'mariano' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'}`}
                 >
                     Coluna Mariano Wikoli
                 </button>
-                <button 
+                <button
                     onClick={() => setActiveTab('politica')}
                     className={`pb-2 transition-colors whitespace-nowrap ${activeTab === 'politica' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'}`}
                 >
                     Política
                 </button>
-                <button 
+                <button
                     onClick={() => setActiveTab('geral')}
                     className={`pb-2 transition-colors whitespace-nowrap ${activeTab === 'geral' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'}`}
                 >
@@ -92,14 +92,14 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
 
             {/* Content Area with Animation */}
             <div className="grid grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500 key={activeTab}">
-                
+
                 {/* Main Card (Left) */}
                 <div className="col-span-12 lg:col-span-8">
                     {mainItem ? (
                         <Link to={`/noticia/${mainItem.id}`} className="group block relative overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500">
                             <div className="aspect-video overflow-hidden">
-                                <img 
-                                    src={mainItem.image} 
+                                <img
+                                    src={mainItem.image}
                                     alt={mainItem.title}
                                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                                 />
@@ -133,15 +133,15 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
                 <div className="col-span-12 lg:col-span-4 flex flex-col gap-4 overflow-y-auto max-h-[600px] pr-2 scrollbar-thin scrollbar-thumb-gray-200">
                     {listItems.length > 0 ? (
                         listItems.map((item, idx) => (
-                            <Link 
-                                key={item.id} 
+                            <Link
+                                key={item.id}
                                 to={`/noticia/${item.id}`}
                                 className="group flex gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100"
                             >
                                 <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 relative">
-                                    <img 
-                                        src={item.image} 
-                                        alt="" 
+                                    <img
+                                        src={item.image}
+                                        alt=""
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                     />
                                     <div className="absolute top-1 left-1 bg-black/50 backdrop-blur-sm text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase">
@@ -152,7 +152,7 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1 group-hover:text-[#16a34a] transition-colors">
                                         {item.category || 'Notícia'}
                                     </span>
-                                    <h4 className="font-bold text-gray-900 leading-snug line-clamp-3 group-hover:text-[#16a34a] transition-colors">
+                                    <h4 className="font-black text-black leading-snug line-clamp-3 group-hover:text-[#16a34a] transition-colors">
                                         {item.title}
                                     </h4>
                                     <div className="flex items-center gap-2 mt-2 text-[10px] text-gray-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">

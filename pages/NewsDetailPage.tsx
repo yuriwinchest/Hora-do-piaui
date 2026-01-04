@@ -47,12 +47,12 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                         </span>
                     </div>
 
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 font-serif leading-[1.1] mb-6 tracking-tight">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-black font-serif leading-[1.1] mb-6 tracking-tight">
                         {news.title}
                     </h1>
 
                     {news.description && (
-                        <p className="text-xl md:text-2xl text-gray-600 font-medium font-sans leading-relaxed mb-8 border-l-4 border-gray-200 pl-6">
+                        <p className="text-xl md:text-2xl text-black font-medium font-sans leading-relaxed mb-8 border-l-4 border-gray-200 pl-6">
                             {news.description}
                         </p>
                     )}
@@ -109,11 +109,11 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                         </div>
                         <div className="flex-1 text-center md:text-left z-10">
                             <p className="font-bold text-gray-400 text-xs uppercase tracking-widest mb-1">Escrito por</p>
-                            <h3 className="font-serif font-bold text-gray-900 text-xl md:text-2xl mb-3">
+                            <h3 className="font-serif font-bold text-black text-xl md:text-2xl mb-3">
                                 {news.authorName || "Redação Hora do Piauí"}
                             </h3>
                             {news.authorBio ? (
-                                <p className="text-gray-600 leading-relaxed font-sans text-base md:text-lg">
+                                <p className="text-black leading-relaxed font-sans text-base md:text-lg">
                                     {news.authorBio}
                                 </p>
                             ) : (
@@ -141,12 +141,12 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                 </div>
 
                 {/* Article Content */}
-                <div className="prose prose-lg md:prose-xl prose-slate max-w-none font-serif text-gray-800 leading-loose mb-20 first-letter:text-5xl first-letter:font-black first-letter:text-primary first-letter:mr-3 first-letter:float-left">
+                <div className="prose prose-lg md:prose-xl max-w-none font-serif text-black prose-headings:text-black prose-p:text-black prose-strong:text-black prose-a:text-black leading-loose mb-20 first-letter:text-5xl first-letter:font-black first-letter:text-primary first-letter:mr-3 first-letter:float-left">
                     {news.content?.startsWith('<') ? (
                         <div dangerouslySetInnerHTML={{ __html: news.content }} />
                     ) : (
                         news.content?.split('\n').map((paragraph, idx) => (
-                            <p key={idx} className="mb-8 text-gray-800">
+                            <p key={idx} className="mb-8 text-black">
                                 {paragraph}
                             </p>
                         ))
@@ -159,7 +159,7 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                 <div className="max-w-6xl mx-auto px-4">
                     <div className="flex items-center gap-2 mb-8">
                         <span className="w-3 h-8 bg-red-600 rounded-sm"></span>
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
+                        <h2 className="text-2xl md:text-3xl font-black text-black tracking-tight">
                             Leia também sobre {news.category}
                         </h2>
                     </div>
@@ -178,7 +178,7 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                                     <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">
                                         {item.category || 'Notícia'}
                                     </span>
-                                    <h3 className="font-bold text-gray-900 leading-snug group-hover:text-red-600 transition-colors line-clamp-3">
+                                    <h3 className="font-bold text-black leading-snug group-hover:text-red-600 transition-colors line-clamp-3">
                                         {item.title}
                                     </h3>
                                 </div>

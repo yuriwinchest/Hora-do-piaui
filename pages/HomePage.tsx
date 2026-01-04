@@ -54,7 +54,7 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
                             <div className="overflow-hidden rounded mb-2">
                                 <img src={news.image} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
                             </div>
-                            <h2 className="text-lg font-bold font-serif leading-tight group-hover:text-[#16a34a] transition-colors">{news.title}</h2>
+                            <h2 className="text-lg text-black font-black font-serif leading-tight group-hover:text-[#16a34a] transition-colors">{news.title}</h2>
                         </Link>
                     ))}
                 </div>
@@ -99,7 +99,27 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
             {/* Vídeos (5 items grid) */}
             <section className="my-12">
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-6">Assista aos vídeos de hoje</p>
-                <div className="grid grid-cols-5 gap-4">
+
+                {/* Mobile Layout */}
+                <div className="md:hidden flex flex-col gap-6">
+                    {/* Destaque Mobile */}
+                    {latestVideos.length > 0 && (
+                        <div className="w-full">
+                            <VideoCard item={latestVideos[0]} />
+                        </div>
+                    )}
+                    {/* Carrossel Mobile */}
+                    <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+                        {latestVideos.slice(1).map(video => (
+                            <div key={video.id} className="min-w-[160px] w-[160px]">
+                                <VideoCard item={video} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Desktop Layout */}
+                <div className="hidden md:grid grid-cols-5 gap-4">
                     {latestVideos.map(video => (
                         <VideoCard key={video.id} item={video} />
                     ))}

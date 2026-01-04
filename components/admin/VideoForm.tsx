@@ -123,7 +123,6 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
                     onClick={() => navigate('/admin/videos')}
                     className="p-2 hover:bg-white/50 rounded-xl transition-colors"
                     aria-label="Voltar para a lista de vídeos"
-                >   aria-label="Voltar para a lista de vídeos"
                 >
                     <ArrowLeft size={24} />
                 </button>

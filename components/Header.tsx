@@ -1,13 +1,17 @@
 import React from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Newspaper } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 import { HEADER_NAV } from '../constants';
+import NewsListModal from './common/NewsListModal';
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isNewsModalOpen, setIsNewsModalOpen] = React.useState(false);
 
   return (
     <header className="border-b border-gray-200">
+      <NewsListModal isOpen={isNewsModalOpen} onClose={() => setIsNewsModalOpen(false)} />
+
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50">
           <div
@@ -44,14 +48,24 @@ const Header: React.FC = () => {
       )}
 
       <div className="relative max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between">
-        <button
-          type="button"
-          aria-label="Abrir menu"
-          className="md:hidden absolute right-4 top-6 p-2 -mr-2 text-gray-700 hover:text-primary transition-colors"
-          onClick={() => setIsMobileMenuOpen(true)}
-        >
-          <Menu size={28} />
-        </button>
+        <div className="md:hidden absolute right-4 top-6 flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Últimas Notícias"
+            className="p-2 text-gray-700 hover:text-primary transition-colors"
+            onClick={() => setIsNewsModalOpen(true)}
+          >
+            <Newspaper size={24} />
+          </button>
+          <button
+            type="button"
+            aria-label="Abrir menu"
+            className="p-2 -mr-2 text-gray-700 hover:text-primary transition-colors"
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <Menu size={28} />
+          </button>
+        </div>
 
         <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-4 md:mb-0">
           <div className="w-full flex items-center justify-center md:w-auto md:justify-start">
