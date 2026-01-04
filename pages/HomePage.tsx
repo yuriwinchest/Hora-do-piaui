@@ -15,11 +15,17 @@ interface HomePageProps {
 
 const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
     const [latestVideos, setLatestVideos] = useState<any[]>([]);
+    const [selectedVideo, setSelectedVideo] = useState<any | null>(null);
+    // Ref para a seção de vídeos
+    const videoSectionRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const fetchVideos = async () => {
             const { data } = await supabase.from('horapiaui_videos').select('*').order('created_at', { ascending: false }).limit(5);
-            if (data) setLatestVideos(data);
+            if (data) {
+                setLatestVideos(data);
+                setSelectedVideo(data[0]);
+            }
         };
         fetchVideos();
     }, []);
