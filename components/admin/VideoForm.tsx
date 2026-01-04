@@ -154,11 +154,12 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* URL Video */}
                     <div className="space-y-2">
-                        <label className="text-sm font-black uppercase tracking-wider text-gray-500 flex items-center gap-2">
+                        <label htmlFor="videoUrl" className="text-sm font-black uppercase tracking-wider text-gray-500 flex items-center gap-2">
                             <LinkIcon size={16} /> URL do Vídeo (Instagram ou YouTube)
                         </label>
                         <div className="relative">
                             <input
+                                id="videoUrl"
                                 type="text"
                                 name="url"
                                 value={formData.url}
@@ -241,10 +242,11 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
 
                     {/* Tag */}
                     <div className="space-y-2">
-                        <label className="text-sm font-black uppercase tracking-wider text-gray-500 flex items-center gap-2">
+                        <label htmlFor="videoTag" className="text-sm font-black uppercase tracking-wider text-gray-500 flex items-center gap-2">
                             <Tag size={16} /> Tag
                         </label>
                         <input
+                            id="videoTag"
                             type="text"
                             name="tag"
                             value={formData.tag}

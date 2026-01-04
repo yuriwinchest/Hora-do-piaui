@@ -133,8 +133,9 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Título da Notícia</label>
+                            <label htmlFor="title" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Título da Notícia</label>
                             <input
+                                id="title"
                                 type="text"
                                 name="title"
                                 value={formData.title}
@@ -145,8 +146,9 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Descrição Curta (Resumo)</label>
+                            <label htmlFor="description" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Descrição Curta (Resumo)</label>
                             <textarea
+                                id="description"
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
@@ -217,6 +219,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                                 onChange={handleChange}
                                 placeholder="Ou cole a URL da imagem aqui..."
                                 className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary/20 outline-none mt-2"
+                                aria-label="URL da imagem de capa"
                             />
                         </div>
 
