@@ -1,8 +1,16 @@
 import React from 'react';
 import { LayoutDashboard, FileText, Settings, LogOut, PlusCircle, Video, LayoutGrid, User } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 
 const AdminSidebar: React.FC = () => {
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/admin/login');
+    };
+
     const navItems = [
         { label: 'Painel', href: '/admin', icon: LayoutDashboard },
         { label: 'Configurar Home', href: '/admin/layout', icon: LayoutGrid },
@@ -40,7 +48,7 @@ const AdminSidebar: React.FC = () => {
             </nav>
 
             <div className="p-4 border-t border-gray-100">
-                <button className="flex items-center gap-3 px-4 py-3 w-full rounded-lg font-bold text-red-500 hover:bg-red-50 transition-all">
+                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 w-full rounded-lg font-bold text-red-500 hover:bg-red-50 transition-all">
                     <LogOut size={20} />
                     Sair
                 </button>

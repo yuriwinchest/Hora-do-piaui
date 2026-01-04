@@ -14,6 +14,7 @@ import AdminVideosPage from './pages/admin/AdminVideosPage';
 import AdminVideoEditor from './pages/admin/AdminVideoEditor';
 import AdminLayoutPage from './pages/admin/AdminLayoutPage';
 import AdminLayout from './components/admin/AdminLayout';
+import LoginPage from './pages/admin/LoginPage';
 import { useNews } from './hooks/useNews';
 import { ErrorState } from './components/common/ErrorState';
 
@@ -118,6 +119,7 @@ function App() {
         } />
 
         {/* Admin Routes */}
+        <Route path="/admin/login" element={<LoginPage />} />
         <Route path="/admin" element={
           <AdminLayout>
             <AdminDashboard items={allNews} />
