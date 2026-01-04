@@ -1,11 +1,11 @@
+
 import React, { useState } from 'react';
-import { LayoutGrid, Type, Newspaper, User, CheckCircle2, Image as ImageIcon, Upload, Loader2 } from 'lucide-react';
+import { LayoutGrid, Type, Newspaper, User, CheckCircle2, Image as ImageIcon, Upload, Loader2, Grid2X2 } from 'lucide-react';
 import { NewsItem, HomeLayoutConfig } from '../../types';
 import { uploadImage } from '../../utils/upload';
 
 interface AdminHomeConfigProps {
     items: NewsItem[];
-    config: HomeLayoutConfig;
     config: HomeLayoutConfig;
     onUpdate: (newConfig: HomeLayoutConfig) => void;
     onSaveNews: (item: NewsItem) => Promise<void>;
@@ -48,7 +48,7 @@ const AdminHomeConfig: React.FC<AdminHomeConfigProps> = ({ items, config, onUpda
                     <select
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
-                        className="w-full p-3 bg-gray-50 border-none rounded-xl font-bold text-sm focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none"
+                        className="w-full p-3 bg-gray-50 border-none rounded-xl font-bold text-sm focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none text-gray-700"
                     >
                         <option value="">Selecione uma notícia...</option>
                         {filtered.map(news => (
@@ -82,7 +82,8 @@ const AdminHomeConfig: React.FC<AdminHomeConfigProps> = ({ items, config, onUpda
                                 <CheckCircle2 size={12} className="text-green-500" />
                                 <span className="text-[10px] text-green-600 font-black uppercase">Selecionado</span>
                             </div>
-                            <p className="text-xs font-bold text-gray-900 line-clamp-2 leading-snug">{selectedNews.title}</p>
+                            {/* Title in RED as requested */}
+                            <p className="text-xs font-black text-red-600 line-clamp-2 leading-snug">{selectedNews.title}</p>
                             <p className="text-[10px] text-gray-400 mt-1">Clique na foto para trocar</p>
                         </div>
                     </div>
@@ -98,13 +99,14 @@ const AdminHomeConfig: React.FC<AdminHomeConfigProps> = ({ items, config, onUpda
                 <p className="text-gray-500 font-bold">Gerencie o que aparece nas principais dobras do site.</p>
             </div>
 
-            {/* Fold 1: Capa (Headline & Hero) */}
+            {/* Fold 1: Manchete 1 */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-8">
                 <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
                     <div className="p-2 bg-primary/10 text-primary rounded-lg">
                         <Type size={20} />
                     </div>
-                    <h2 className="text-xl font-black text-gray-800">Primeira Dobra: Capa</h2>
+                    {/* Renamed to Manchete 1 */}
+                    <h2 className="text-xl font-black text-gray-800">Manchete 1 (Primeira Dobra)</h2>
                 </div>
 
                 <div className="space-y-6">
@@ -114,51 +116,48 @@ const AdminHomeConfig: React.FC<AdminHomeConfigProps> = ({ items, config, onUpda
                             type="text"
                             value={config.mainHeadline}
                             onChange={(e) => handleConfigChange('mainHeadline', e.target.value)}
-                            className="w-full text-2xl font-serif font-black p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                            // Input text in Red? Or just the News Title? User said "Manchete principal... coloque em vermelho". 
+                            // This input is for the Headline Text. The News Titles are below.
+                            // I'll make this text Red too to be safe.
+                            className="w-full text-2xl font-serif font-black text-red-600 p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-primary/20 outline-none placeholder-gray-300"
                             placeholder="Ex: Trump anuncia ataque à Venezuela..."
                         />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Left Column: 2 Items */}
                         <div className="space-y-6">
+                            <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                                <Grid2X2 size={14} />
+                                Esquerda (2 Itens)
+                            </h3>
                             <NewsSelector
-                                label="Notícia Destaque (Principal)"
-                                value={config.heroMainId}
-                                onChange={(val) => handleConfigChange('heroMainId', val)}
+                                label="Esquerda 1"
+                                value={config.heroTopIds[0]}
+                                onChange={(val) => handleListChange('heroTopIds', 0, val)}
                             />
-                            <div className="grid grid-cols-2 gap-4">
-                                <NewsSelector
-                                    label="Topo Esquerda"
-                                    value={config.heroTopIds[0]}
-                                    onChange={(val) => handleListChange('heroTopIds', 0, val)}
-                                />
-                                <NewsSelector
-                                    label="Topo Direita"
-                                    value={config.heroTopIds[1]}
-                                    onChange={(val) => handleListChange('heroTopIds', 1, val)}
-                                />
-                            </div>
+                            <NewsSelector
+                                label="Esquerda 2"
+                                value={config.heroTopIds[1]}
+                                onChange={(val) => handleListChange('heroTopIds', 1, val)}
+                            />
                         </div>
 
+                        {/* Right Column: 2 Items */}
                         <div className="bg-gray-50/50 p-6 rounded-2xl space-y-6">
                             <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
                                 <Newspaper size={14} />
-                                Lista Lateral
+                                Lista Lateral (2 Itens)
                             </h3>
                             <NewsSelector
-                                label="Lateral Item 1"
+                                label="Lateral 1"
                                 value={config.heroSideIds[0]}
                                 onChange={(val) => handleListChange('heroSideIds', 0, val)}
                             />
                             <NewsSelector
-                                label="Lateral Item 2"
+                                label="Lateral 2"
                                 value={config.heroSideIds[1]}
                                 onChange={(val) => handleListChange('heroSideIds', 1, val)}
-                            />
-                            <NewsSelector
-                                label="Lateral Item 3"
-                                value={config.heroSideIds[2]}
-                                onChange={(val) => handleListChange('heroSideIds', 2, val)}
                             />
                         </div>
                     </div>

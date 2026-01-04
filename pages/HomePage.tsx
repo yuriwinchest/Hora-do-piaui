@@ -24,28 +24,41 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
         fetchVideos();
     }, []);
 
-    // Layout configuration based on screenshot
-    // Hero: 2 items (Left Main) + 2 items (Right Sidebar)
-    const heroItems = items.slice(0, 2);
-    const sideItems = items.slice(2, 4);
+    // Map config IDs to items
+    const leftGridItems = config.heroTopIds
+        .map(id => items.find(item => item.id === id))
+        .filter((item): item is NewsItem => !!item);
 
-    // Mariano Section: 1 Main + 4 List items
-    const marianoMain = items[4];
-    const marianoList = items.slice(5, 9);
+    const rightSideItems = config.heroSideIds
+        .map(id => items.find(item => item.id === id))
+        .filter((item): item is NewsItem => !!item);
+
+    // Fallback if config is empty (only if no IDs configured)
+    const effectiveLeftItems = leftGridItems.length > 0 ? leftGridItems : items.slice(0, 2);
+    const effectiveRightItems = rightSideItems.length > 0 ? rightSideItems : items.slice(2, 4);
+
+    // Mariano Section
+    const marianoMain = config.marianoMainId
+        ? items.find(i => i.id === config.marianoMainId)
+        : items[4];
+
+    const marianoList = config.marianoListIds.length > 0
+        ? config.marianoListIds.map(id => items.find(i => i.id === id)).filter((i): i is NewsItem => !!i)
+        : items.slice(5, 9);
 
     return (
         <main className="max-w-7xl mx-auto px-4 py-8">
-            {/* Título Principal Green Box (Exact Match) */}
+            {/* Título Principal Green Box */}
             <div className="bg-[#16a34a] px-4 py-2 mb-6 inline-block">
                 <h1 className="text-white text-3xl font-bold font-serif">
-                    {config.mainHeadline || "Trump anuncia ataque à Venezuela"}
+                    {config.mainHeadline || "Manchete Principal"}
                 </h1>
             </div>
 
             {/* Grid Destaque: 2 Colunas (2 Main + Sidebar) */}
             <section className="grid grid-cols-12 gap-6 mb-12">
                 <div className="col-span-12 lg:col-span-8 grid grid-cols-2 gap-4">
-                    {heroItems.map(news => (
+                    {effectiveLeftItems.map(news => (
                         <div key={news.id}>
                             <img src={news.image} className="w-full aspect-video object-cover rounded mb-2" alt="" />
                             <h2 className="text-lg font-bold font-serif leading-tight">{news.title}</h2>
@@ -53,7 +66,7 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
                     ))}
                 </div>
                 <div className="col-span-12 lg:col-span-4 space-y-4">
-                    {sideItems.map(news => (
+                    {effectiveRightItems.map(news => (
                         <NewsCard key={news.id} item={news} variant="compact" showDescription={true} />
                     ))}
                 </div>
