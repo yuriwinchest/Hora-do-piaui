@@ -509,24 +509,31 @@ const App: React.FC = () => {
   React.useEffect(() => {
     async function fetchData() {
       try {
-        console.log('Fetching news...');
+        setLoading(true);
+        console.log('Fetching data...');
+
         // 1. Fetch News
-        const { data: newsData, error: newsError } = await supabase
+        let { data: newsData, error: newsError } = await supabase
           .from('news')
           .select('*')
           .order('created_at', { ascending: false });
 
         if (newsError) {
           console.error('Error fetching news:', newsError);
-          throw newsError;
+          // Try to proceed even with error to see if we can restore defaults
         }
 
-        // If DB is empty, seed it with constants (first run)
-        if (!newsData || newsData.length === 0) {
-          console.log('News table empty, seeding with constants...');
-          const initialItems = [...TOP_NEWS, ...SIDE_NEWS, MIDDLE_FEATURE, ...MIDDLE_LIST];
-          const { data: seededData, error: seedError } = await supabase.from('news').insert(
-            initialItems.map(n => ({
+        // Robust Content Restoration
+        // Check if the essential "initial cards" are present in the DB. If not, restore them.
+        const initialItems = [...TOP_NEWS, ...SIDE_NEWS, MIDDLE_FEATURE, ...MIDDLE_LIST];
+        const existingIds = new Set((newsData || []).map(n => n.id));
+        const missingItems = initialItems.filter(item => !existingIds.has(item.id));
+
+        if (missingItems.length > 0) {
+          console.log(`Restoring ${missingItems.length} missing default items...`);
+
+          const { error: seedError } = await supabase.from('news').upsert(
+            missingItems.map(n => ({
               id: n.id,
               title: n.title,
               image: n.image,
@@ -539,63 +546,68 @@ const App: React.FC = () => {
               is_large: n.isLarge,
               status: 'published'
             }))
-          ).select();
+          );
 
           if (seedError) {
-            console.error('Error seeding news:', seedError);
-            throw seedError;
+            console.error('Error restoring items:', seedError);
+          } else {
+            // If we successfully restored items, force-refresh the list
+            const { data: refreshed } = await supabase.from('news').select('*').order('created_at', { ascending: false });
+            if (refreshed) newsData = refreshed;
+
+            // Also restore/ensure default layout points to these items
+            await supabase.from('home_layout').upsert({
+              id: 1,
+              main_headline: 'Bem-vindo ao Hora do Piauí',
+              hero_main_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d475',
+              hero_top_ids: ['f47ac10b-58cc-4372-a567-0e02b2c3d471', 'f47ac10b-58cc-4372-a567-0e02b2c3d472'],
+              hero_side_ids: ['f47ac10b-58cc-4372-a567-0e02b2c3d473', 'f47ac10b-58cc-4372-a567-0e02b2c3d474'],
+              mariano_main_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d476',
+              mariano_list_ids: ['f47ac10b-58cc-4372-a567-0e02b2c3d477', 'f47ac10b-58cc-4372-a567-0e02b2c3d478', 'f47ac10b-58cc-4372-a567-0e02b2c3d479']
+            });
           }
-          if (seededData) {
-            setAllNews(seededData.map(mapNewsFromDb));
-          }
-        } else {
-          setAllNews(newsData.map(mapNewsFromDb));
         }
 
-        // Seed Videos if empty
-        const { data: videosData, error: vSelectError } = await supabase.from('videos').select('id');
-        if (vSelectError && vSelectError.code !== 'PGRST116') {
-          console.error('Error checking videos:', vSelectError);
-        }
+        setAllNews((newsData || []).map(mapNewsFromDb));
 
-        if (!videosData || videosData.length === 0) {
-          console.log('Videos table empty, seeding...');
-          const { error: vInsertError } = await supabase.from('videos').insert(
-            VIDEOS.map(v => ({
+        // 2. Videos
+        let { data: videosData } = await supabase.from('videos').select('*');
+        const existingVideoIds = new Set((videosData || []).map(v => v.id));
+        const missingVideos = VIDEOS.filter(v => !existingVideoIds.has(v.id));
+
+        if (missingVideos.length > 0) {
+          console.log('Restoring missing videos...');
+          await supabase.from('videos').upsert(
+            missingVideos.map(v => ({
+              id: v.id,
               title: v.title,
               image: v.image,
-              thumbnail: v.image, // Use image as fallback if thumbnail missing
+              thumbnail: v.image,
               url: v.url || '',
               duration: v.duration || '0:00',
               tag: v.tag || '',
               tag_color: v.tagColor || 'bg-black'
             }))
           );
-          if (vInsertError) console.error('Error seeding videos:', vInsertError);
         }
 
-        // 2. Fetch Home Config
-        console.log('Fetching home configuration...');
-        const { data: configData, error: configError } = await supabase
+        // 3. Fetch Home Config
+        const { data: configData } = await supabase
           .from('home_layout')
           .select('*')
           .eq('id', 1)
           .single();
 
-        if (configError && configError.code !== 'PGRST116') {
-          console.warn('Config fetch error (ignoring if not critical):', configError);
-        }
+        // Use robust defaults if config is missing or incomplete
+        setHomeConfig({
+          mainHeadline: configData?.main_headline || 'Bem-vindo ao Hora do Piauí',
+          heroMainId: configData?.hero_main_id || 'f47ac10b-58cc-4372-a567-0e02b2c3d475',
+          heroTopIds: (configData?.hero_top_ids?.length) ? configData.hero_top_ids : ['f47ac10b-58cc-4372-a567-0e02b2c3d471', 'f47ac10b-58cc-4372-a567-0e02b2c3d472'],
+          heroSideIds: (configData?.hero_side_ids?.length) ? configData.hero_side_ids : ['f47ac10b-58cc-4372-a567-0e02b2c3d473', 'f47ac10b-58cc-4372-a567-0e02b2c3d474'],
+          marianoMainId: configData?.mariano_main_id || 'f47ac10b-58cc-4372-a567-0e02b2c3d476',
+          marianoListIds: (configData?.mariano_list_ids?.length) ? configData.mariano_list_ids : ['f47ac10b-58cc-4372-a567-0e02b2c3d477', 'f47ac10b-58cc-4372-a567-0e02b2c3d478', 'f47ac10b-58cc-4372-a567-0e02b2c3d479']
+        });
 
-        if (configData) {
-          setHomeConfig({
-            mainHeadline: configData.main_headline,
-            heroMainId: configData.hero_main_id,
-            heroTopIds: configData.hero_top_ids || [],
-            heroSideIds: configData.hero_side_ids || [],
-            marianoMainId: configData.mariano_main_id,
-            marianoListIds: configData.mariano_list_ids || []
-          });
-        }
       } catch (err: any) {
         console.error('Critical initialization error:', err);
         setFetchError(err.message || 'Erro inesperado durante a inicialização.');
