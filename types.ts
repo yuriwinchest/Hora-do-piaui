@@ -16,6 +16,7 @@ export interface NewsItem {
   authorAvatar?: string;
   authorBio?: string;
   videoUrl?: string; // YouTube URL
+  instagramUrl?: string;
 }
 
 export interface VideoItem {

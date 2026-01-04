@@ -16,6 +16,7 @@ export const mapNewsFromDb = (n: any): NewsItem => ({
     authorAvatar: n.author_avatar,
     authorBio: n.author_bio, // New field mapping
     videoUrl: n.video_url, // YouTube URL
+    instagramUrl: n.instagram_url,
 });
 
 export const normalizeText = (value: string) =>

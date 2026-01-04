@@ -238,6 +238,20 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                                 />
                             </div>
                         </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                Link do Instagram da Matéria
+                            </label>
+                            <input
+                                type="text"
+                                name="instagramUrl"
+                                value={formData.instagramUrl || ''}
+                                onChange={handleChange}
+                                placeholder="https://instagram.com/p/..."
+                                className="w-full p-3 bg-gray-50 rounded-lg font-bold border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                            />
+                        </div>
                     </div>
 
                     {/* Author inputs removed - auto-filled from profile */}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ChevronLeft, Share2, Facebook, Search } from 'lucide-react';
+import { ChevronLeft, Share2, Facebook, Search, Instagram } from 'lucide-react';
 import { NewsItem } from '../types';
 import { PageContainer } from '../components/common/PageContainer';
 
@@ -92,6 +92,17 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
 
                         {/* Social Share */}
                         <div className="flex items-center gap-3">
+                            {news.instagramUrl && (
+                                <a
+                                    href={news.instagramUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 bg-[#E1306C] text-white px-4 py-2 rounded-full font-bold hover:opacity-90 transition-opacity text-xs uppercase tracking-wide shadow-sm"
+                                >
+                                    <Instagram size={16} />
+                                    Ver no Instagram
+                                </a>
+                            )}
                             <button className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1877F2] text-white hover:opacity-90 transition-opacity" title="Compartilhar no Facebook">
                                 <Facebook size={18} fill="currentColor" />
                             </button>

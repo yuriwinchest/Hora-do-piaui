@@ -138,7 +138,8 @@ export const useNews = () => {
             updated_at: new Date().toISOString(),
             author_name: item.authorName,
             author_avatar: item.authorAvatar,
-            author_bio: item.authorBio
+            author_bio: item.authorBio,
+            instagram_url: item.instagramUrl
         };
 
         let query;
