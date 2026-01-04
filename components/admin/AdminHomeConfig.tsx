@@ -1,14 +1,17 @@
-import React from 'react';
-import { LayoutGrid, Type, Newspaper, User, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { LayoutGrid, Type, Newspaper, User, CheckCircle2, Image as ImageIcon, Upload, Loader2 } from 'lucide-react';
 import { NewsItem, HomeLayoutConfig } from '../../types';
+import { uploadImage } from '../../utils/upload';
 
 interface AdminHomeConfigProps {
     items: NewsItem[];
     config: HomeLayoutConfig;
+    config: HomeLayoutConfig;
     onUpdate: (newConfig: HomeLayoutConfig) => void;
+    onSaveNews: (item: NewsItem) => Promise<void>;
 }
 
-const AdminHomeConfig: React.FC<AdminHomeConfigProps> = ({ items, config, onUpdate }) => {
+const AdminHomeConfig: React.FC<AdminHomeConfigProps> = ({ items, config, onUpdate, onSaveNews }) => {
     const publishedNews = items.filter(n => n.status === 'published');
 
     const handleConfigChange = (field: keyof HomeLayoutConfig, value: any) => {
@@ -23,24 +26,65 @@ const AdminHomeConfig: React.FC<AdminHomeConfigProps> = ({ items, config, onUpda
 
     const NewsSelector = ({ label, value, onChange, category }: { label: string, value: string, onChange: (val: string) => void, category?: string }) => {
         const filtered = category ? publishedNews.filter(n => n.category === category) : publishedNews;
+        const selectedNews = items.find(n => n.id === value);
+        const [uploading, setUploading] = useState(false);
+
+        const handleImageUpdate = async (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (file && selectedNews) {
+                setUploading(true);
+                const url = await uploadImage(file);
+                if (url) {
+                    await onSaveNews({ ...selectedNews, image: url });
+                }
+                setUploading(false);
+            }
+        };
 
         return (
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">{label}</label>
-                <select
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="w-full p-3 bg-gray-50 border-none rounded-xl font-bold text-sm focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none"
-                >
-                    <option value="">Selecione uma notícia...</option>
-                    {filtered.map(news => (
-                        <option key={news.id} value={news.id}>{news.title}</option>
-                    ))}
-                </select>
-                {value && (
-                    <div className="flex items-center gap-2 mt-2 px-3 py-1 bg-green-50 rounded-lg">
-                        <CheckCircle2 size={12} className="text-green-500" />
-                        <span className="text-[10px] text-green-600 font-black uppercase">Selecionado</span>
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">{label}</label>
+                    <select
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        className="w-full p-3 bg-gray-50 border-none rounded-xl font-bold text-sm focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none"
+                    >
+                        <option value="">Selecione uma notícia...</option>
+                        {filtered.map(news => (
+                            <option key={news.id} value={news.id}>{news.title}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {selectedNews && (
+                    <div className="flex gap-4 p-4 bg-white border border-gray-100 rounded-xl shadow-sm items-start">
+                        <div
+                            className="relative group w-24 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border border-gray-200"
+                            onClick={() => !uploading && document.getElementById(`img-${label}`)?.click()}
+                            title="Clique para alterar a imagem desta notícia"
+                        >
+                            <img src={selectedNews.image} alt="" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                {uploading ? <Loader2 className="animate-spin text-white" size={16} /> : <Upload className="text-white" size={16} />}
+                            </div>
+                            <input
+                                type="file"
+                                id={`img-${label}`}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleImageUpdate}
+                                disabled={uploading}
+                            />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                                <CheckCircle2 size={12} className="text-green-500" />
+                                <span className="text-[10px] text-green-600 font-black uppercase">Selecionado</span>
+                            </div>
+                            <p className="text-xs font-bold text-gray-900 line-clamp-2 leading-snug">{selectedNews.title}</p>
+                            <p className="text-[10px] text-gray-400 mt-1">Clique na foto para trocar</p>
+                        </div>
                     </div>
                 )}
             </div>

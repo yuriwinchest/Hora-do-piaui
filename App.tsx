@@ -173,6 +173,7 @@ function App() {
               items={allNews}
               config={homeConfig}
               onUpdate={updateHomeConfig}
+              onSaveNews={saveNews}
             />
           </AdminLayout>
         } />

@@ -3,23 +3,35 @@ import { supabase } from '../lib/supabase';
 
 export const uploadImage = async (file: File): Promise<string | null> => {
     try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `${fileName}`;
+        // 1. Get signed URL and token from our API (bypassing RLS)
+        const response = await fetch('/api/sign-upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                fileName: file.name,
+                fileType: file.type
+            })
+        });
 
+        if (!response.ok) {
+            throw new Error(`API error: ${response.statusText}`);
+        }
+
+        const { path, token, publicUrl } = await response.json();
+
+        // 2. Upload to Supabase using the signed token
         const { error: uploadError } = await supabase.storage
             .from('images')
-            .upload(filePath, file);
+            .uploadToSignedUrl(path, token, file);
 
         if (uploadError) {
             console.error('Error uploading image:', uploadError);
             throw uploadError;
         }
 
-        const { data } = supabase.storage.from('images').getPublicUrl(filePath);
-        return data.publicUrl;
+        return publicUrl;
     } catch (error) {
         console.error('Upload failed:', error);
-        return null;
+        return null; // Handle error appropriately in UI
     }
 };
