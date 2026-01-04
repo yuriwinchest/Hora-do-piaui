@@ -130,6 +130,8 @@ function App() {
               items={allNews}
               onDelete={deleteNews}
               onPublish={publishNews}
+              homeConfig={homeConfig}
+              onUpdateHomeConfig={updateHomeConfig}
             />
           </AdminLayout>
         } />

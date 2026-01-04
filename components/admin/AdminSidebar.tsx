@@ -7,6 +7,7 @@ const AdminSidebar: React.FC = () => {
         { label: 'Painel', href: '/admin', icon: LayoutDashboard },
         { label: 'Configurar Home', href: '/admin/layout', icon: LayoutGrid },
         { label: 'Notícias', href: '/admin/noticias', icon: FileText },
+        { label: 'Coluna Mariano', href: '/admin/noticias?category=coluna-mariano', icon: User },
         { label: 'Vídeos', href: '/admin/videos', icon: Video },
         { label: 'Nova Notícia', href: '/admin/noticia/nova', icon: PlusCircle },
         { label: 'Configurações', href: '/admin/configuracoes', icon: Settings },
