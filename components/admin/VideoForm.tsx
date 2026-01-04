@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, ArrowLeft, Video, Tag, Link as LinkIcon, Clock } from 'lucide-react';
+import { Save, ArrowLeft, Video, Tag, Link as LinkIcon, Clock, Upload, Image as ImageIcon } from 'lucide-react';
 import { VideoItem } from '../../types';
+import { uploadImage } from '../../utils/upload';
 
 interface VideoFormProps {
     onSave: (item: VideoItem) => Promise<void>;
@@ -30,6 +31,18 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setLoading(true);
+            const url = await uploadImage(file);
+            setLoading(false);
+            if (url) {
+                setFormData(prev => ({ ...prev, image: url }));
+            }
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -106,18 +119,47 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
                         />
                     </div>
 
-                    {/* Image URL */}
+                    {/* Image URL with Upload */}
                     <div className="space-y-2">
                         <label className="text-sm font-black uppercase tracking-wider text-gray-500 flex items-center gap-2">
-                            <Video size={16} /> Thumbnail URL
+                            <Video size={16} /> Thumbnail (Upload ou URL)
                         </label>
+
+                        <div
+                            className="relative group overflow-hidden rounded-xl bg-gray-50 aspect-video flex items-center justify-center border-2 border-dashed border-gray-200 hover:border-black/20 transition-colors cursor-pointer mb-2"
+                            onClick={() => document.getElementById('videoImageInput')?.click()}
+                        >
+                            {formData.image ? (
+                                <>
+                                    <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                        <p className="text-white font-bold flex items-center gap-2">
+                                            <Upload size={20} /> Trocar Imagem
+                                        </p>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center space-y-2">
+                                    <ImageIcon className="mx-auto text-gray-300" size={32} />
+                                    <p className="text-xs text-gray-400 font-bold">Clique para upload</p>
+                                </div>
+                            )}
+                        </div>
+                        <input
+                            type="file"
+                            id="videoImageInput"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                        />
+
                         <input
                             type="text"
                             name="image"
                             value={formData.image}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-black rounded-xl outline-none font-bold transition-all"
-                            placeholder="https://..."
+                            className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-black rounded-xl outline-none font-bold transition-all text-sm"
+                            placeholder="Ou cole a URL da imagem..."
                             required
                         />
                     </div>

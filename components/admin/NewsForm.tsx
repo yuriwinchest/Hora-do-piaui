@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, Send, ArrowLeft, Image as ImageIcon, Eye } from 'lucide-react';
+import { Save, Send, ArrowLeft, Image as ImageIcon, Eye, Upload } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { NewsItem, NewsStatus } from '../../types';
 import NewsCardPreview from './NewsCardPreview';
+import { uploadImage } from '../../utils/upload';
 
 interface NewsFormProps {
     onSave: (item: NewsItem) => void;
@@ -31,6 +32,18 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
 
     const handleContentChange = (content: string) => {
         setFormData(prev => ({ ...prev, content }));
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = await uploadImage(file);
+            if (url) {
+                setFormData(prev => ({ ...prev, image: url }));
+            } else {
+                alert('Erro ao fazer upload da imagem.');
+            }
+        }
     };
 
     const handleSubmit = (status: NewsStatus) => {
@@ -138,26 +151,44 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                     <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Imagem de Capa</label>
-                            <div className="relative group overflow-hidden rounded-xl bg-gray-50 aspect-video flex items-center justify-center border-2 border-dashed border-gray-200">
+                            <div
+                                className="relative group overflow-hidden rounded-xl bg-gray-50 aspect-video flex items-center justify-center border-2 border-dashed border-gray-200 hover:border-primary/50 transition-colors cursor-pointer"
+                                onClick={() => document.getElementById('imageInput')?.click()}
+                            >
                                 {formData.image ? (
-                                    <img
-                                        src={formData.image}
-                                        alt="Preview"
-                                        className="w-full h-full object-cover"
-                                    />
+                                    <>
+                                        <img
+                                            src={formData.image}
+                                            alt="Preview"
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                            <p className="text-white font-bold flex items-center gap-2">
+                                                <Upload size={20} /> Trocar Imagem
+                                            </p>
+                                        </div>
+                                    </>
                                 ) : (
                                     <div className="text-center space-y-2">
                                         <ImageIcon className="mx-auto text-gray-300" size={40} />
-                                        <p className="text-xs text-gray-400 font-bold">Preview da Imagem</p>
+                                        <p className="text-xs text-gray-400 font-bold">Clique para fazer upload</p>
+                                        <p className="text-[10px] text-gray-300 uppercase">ou cole uma URL abaixo</p>
                                     </div>
                                 )}
                             </div>
+                            <input
+                                type="file"
+                                id="imageInput"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                            />
                             <input
                                 type="text"
                                 name="image"
                                 value={formData.image}
                                 onChange={handleChange}
-                                placeholder="Cole a URL da imagem aqui..."
+                                placeholder="Ou cole a URL da imagem aqui..."
                                 className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary/20 outline-none mt-2"
                             />
                         </div>
