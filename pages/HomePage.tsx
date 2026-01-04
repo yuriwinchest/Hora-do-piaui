@@ -3,6 +3,7 @@ import { NavLink, Link } from 'react-router-dom';
 import { NewsItem, HomeLayoutConfig } from '../types';
 import NewsCard from '../components/NewsCard';
 import VideoCard from '../components/VideoCard';
+import GamesBanner from '../components/GamesBanner';
 import TabbedNewsSection from '../components/TabbedNewsSection';
 import AdBanner from '../components/AdBanner';
 import { supabase } from '../lib/supabase';
@@ -35,15 +36,6 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
     // Fallback if config is empty (only if no IDs configured)
     const effectiveLeftItems = leftGridItems.length > 0 ? leftGridItems : items.slice(0, 2);
     const effectiveRightItems = rightSideItems.length > 0 ? rightSideItems : items.slice(2, 4);
-
-    // Mariano Section
-    const marianoMain = config.marianoMainId
-        ? items.find(i => i.id === config.marianoMainId)
-        : items[4];
-
-    const marianoList = config.marianoListIds.length > 0
-        ? config.marianoListIds.map(id => items.find(i => i.id === id)).filter((i): i is NewsItem => !!i)
-        : items.slice(5, 9);
 
     return (
         <main className="max-w-7xl mx-auto px-4 py-8">
