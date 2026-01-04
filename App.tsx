@@ -453,6 +453,7 @@ const App: React.FC = () => {
 
   const [allNews, setAllNews] = React.useState<NewsItem[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [fetchError, setFetchError] = React.useState<string | null>(null);
 
   // Fetch initial data
   React.useEffect(() => {
@@ -525,8 +526,9 @@ const App: React.FC = () => {
             marianoListIds: configData.mariano_list_ids || []
           });
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error fetching data:', err);
+        setFetchError(err.message || 'Erro desconhecido ao carregar dados.');
       } finally {
         setLoading(false);
       }
@@ -543,10 +545,20 @@ const App: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="font-black text-gray-500 uppercase tracking-widest text-xs animate-pulse">Carregando dados...</p>
+          <p className="font-black text-gray-500 uppercase tracking-widest text-xs animate-pulse text-primary">Conectando ao banco...</p>
         </div>
       </div>
     );
+  }
+
+  if (fetchError) {
+    return <ErrorState message={fetchError} />;
+  }
+
+  // Handle data fetching errors
+  if (allNews.length === 0 && !loading) {
+    // If we're not loading and have no news, it might be a connectivity issue or first run 
+    // but the seeding logic should have handled it. If it's still 0, show a mini error.
   }
 
   const mapNewsFromDb = (n: any): NewsItem => ({
@@ -727,5 +739,26 @@ const App: React.FC = () => {
     </div>
   );
 };
+
+const ErrorState: React.FC<{ message: string }> = ({ message }) => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 text-center">
+    <div className="max-w-md space-y-4">
+      <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Sliders size={32} />
+      </div>
+      <h2 className="text-2xl font-black text-gray-900">Erro de Conexão</h2>
+      <p className="text-gray-500 font-bold leading-relaxed">{message}</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="px-6 py-3 bg-black text-white font-black rounded-xl hover:bg-gray-800 transition-all uppercase tracking-widest text-xs"
+      >
+        Tentar Novamente
+      </button>
+      <p className="text-[10px] text-gray-400 mt-8 leading-relaxed">
+        Se o erro persistir, verifique se as tabelas foram criadas corretamente no seu projeto Supabase.
+      </p>
+    </div>
+  </div>
+);
 
 export default App;
