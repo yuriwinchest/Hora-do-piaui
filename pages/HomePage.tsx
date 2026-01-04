@@ -97,22 +97,32 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
             </section>
 
             {/* Vídeos (5 items grid) */}
-            <section className="my-12">
+            <section className="my-12" ref={videoSectionRef}>
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-6">Assista aos vídeos de hoje</p>
 
                 {/* Mobile Layout */}
                 <div className="md:hidden flex flex-col gap-6">
                     {/* Destaque Mobile */}
-                    {latestVideos.length > 0 && (
+                    {selectedVideo && (
                         <div className="w-full">
-                            <VideoCard item={latestVideos[0]} />
+                            <VideoCard key={selectedVideo.id} item={selectedVideo} />
                         </div>
                     )}
                     {/* Carrossel Mobile */}
                     <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-                        {latestVideos.slice(1).map(video => (
-                            <div key={video.id} className="min-w-[160px] w-[160px]">
-                                <VideoCard item={video} />
+                        {latestVideos.map(video => (
+                            <div
+                                key={video.id}
+                                className={`min-w-[160px] w-[160px] cursor-pointer transition-opacity ${selectedVideo?.id === video.id ? 'opacity-100 ring-2 ring-[#16a34a] rounded-lg' : 'opacity-70'}`}
+                                onClick={() => {
+                                    setSelectedVideo(video);
+                                    // Opcional: rolar suavemente para o vídeo destaque se necessário
+                                    // videoSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }}
+                            >
+                                <div className="pointer-events-none">
+                                    <VideoCard item={video} />
+                                </div>
                             </div>
                         ))}
                     </div>

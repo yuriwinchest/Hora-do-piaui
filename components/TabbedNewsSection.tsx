@@ -69,7 +69,7 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
     return (
         <section className="mb-16">
             {/* Tabs Navigation */}
-            <div className="flex gap-6 border-b border-gray-100 mb-8 pb-2 text-[10px] font-black uppercase tracking-widest overflow-x-auto">
+            <div className="flex gap-6 border-b border-gray-100 mb-8 pb-2 text-sm md:text-base font-black uppercase tracking-widest overflow-x-auto">
                 <button
                     onClick={() => setActiveTab('mariano')}
                     className={`pb-2 transition-colors whitespace-nowrap ${activeTab === 'mariano' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'}`}
