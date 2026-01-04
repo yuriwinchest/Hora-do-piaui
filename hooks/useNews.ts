@@ -135,7 +135,9 @@ export const useNews = () => {
             time: item.time,
             is_large: item.isLarge,
             status: item.status,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            author_name: item.authorName,
+            author_avatar: item.authorAvatar
         };
 
         let query;

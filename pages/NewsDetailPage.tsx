@@ -44,11 +44,11 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
             <div className="max-w-4xl mx-auto px-4 pt-8 md:pt-16">
 
                 {/* Author Section */}
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-100 bg-gray-50">
+                <div className="flex items-center gap-6 mb-8">
+                    <div className="w-16 h-16 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-primary/20 bg-gray-50 flex-shrink-0 shadow-sm">
                         <img
-                            src={MOCK_AUTHOR.image}
-                            alt={MOCK_AUTHOR.name}
+                            src={news.authorAvatar || "/assets/logo.png"}
+                            alt={news.authorName || "Redação Hora do Piauí"}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                                 (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=HP&background=random';
@@ -56,11 +56,11 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                         />
                     </div>
                     <div>
-                        <p className="font-bold text-gray-900 text-sm md:text-base leading-none mb-1">
-                            Por {MOCK_AUTHOR.name}
+                        <p className="font-bold text-gray-900 text-lg md:text-2xl leading-tight mb-2">
+                            Por {news.authorName || "Redação Hora do Piauí"}
                         </p>
-                        <p className="text-xs md:text-sm text-gray-500 font-medium">
-                            {MOCK_AUTHOR.role}
+                        <p className="text-sm md:text-base text-gray-500 font-medium bg-gray-100 inline-block px-3 py-1 rounded-full uppercase tracking-wide">
+                            Jornalismo
                         </p>
                     </div>
                 </div>

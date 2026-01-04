@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { NewsItem, HomeLayoutConfig } from '../types';
 import NewsCard from '../components/NewsCard';
 import NewsListItem from '../components/NewsListItem';
@@ -59,10 +59,12 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
             <section className="grid grid-cols-12 gap-6 mb-12">
                 <div className="col-span-12 lg:col-span-8 grid grid-cols-2 gap-4">
                     {effectiveLeftItems.map(news => (
-                        <div key={news.id}>
-                            <img src={news.image} className="w-full aspect-video object-cover rounded mb-2" alt="" />
-                            <h2 className="text-lg font-bold font-serif leading-tight">{news.title}</h2>
-                        </div>
+                        <Link to={`/noticia/${news.id}`} key={news.id} className="group block">
+                            <div className="overflow-hidden rounded mb-2">
+                                <img src={news.image} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
+                            </div>
+                            <h2 className="text-lg font-bold font-serif leading-tight group-hover:text-[#16a34a] transition-colors">{news.title}</h2>
+                        </Link>
                     ))}
                 </div>
                 <div className="col-span-12 lg:col-span-4 space-y-4">
@@ -86,10 +88,12 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
             <section className="grid grid-cols-12 gap-8 mb-16">
                 <div className="col-span-12 lg:col-span-8">
                     {marianoMain && (
-                        <div>
-                            <img src={marianoMain.image} className="w-full aspect-video object-cover rounded mb-4" alt="" />
-                            <h3 className="text-2xl font-bold font-serif">{marianoMain.title}</h3>
-                        </div>
+                        <Link to={`/noticia/${marianoMain.id}`} className="group block">
+                            <div className="overflow-hidden rounded mb-4">
+                                <img src={marianoMain.image} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
+                            </div>
+                            <h3 className="text-2xl font-bold font-serif group-hover:text-[#16a34a] transition-colors">{marianoMain.title}</h3>
+                        </Link>
                     )}
                 </div>
                 <div className="col-span-12 lg:col-span-4 divide-y divide-gray-100">

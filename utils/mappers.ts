@@ -11,7 +11,9 @@ export const mapNewsFromDb = (n: any): NewsItem => ({
     date: n.date,
     time: n.time,
     isLarge: n.is_large,
-    status: n.status
+    status: n.status,
+    authorName: n.author_name,
+    authorAvatar: n.author_avatar
 });
 
 export const normalizeText = (value: string) =>

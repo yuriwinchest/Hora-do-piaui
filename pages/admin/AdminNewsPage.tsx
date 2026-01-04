@@ -39,23 +39,40 @@ const AdminNewsPage: React.FC<AdminNewsPageProps> = ({ items, onDelete, onPublis
 
     const handleAssignPosition = async (position: string, index?: number) => {
         if (!selectedNews) return;
-
         const newConfig = { ...homeConfig };
+        const id = selectedNews.id;
 
+        // 1. First remove this specific news ID from ANY position to avoid duplicates
+        // inside the highlights system (if I move from Card 3 to Main, it leaves Card 3)
+        if (newConfig.marianoMainId === id) newConfig.marianoMainId = '';
+        if (newConfig.heroMainId === id) newConfig.heroMainId = '';
+        newConfig.marianoListIds = newConfig.marianoListIds.filter(i => i !== id);
+        newConfig.heroTopIds = newConfig.heroTopIds.filter(i => i !== id);
+        newConfig.heroSideIds = newConfig.heroSideIds.filter(i => i !== id);
+
+        // 2. Logic: Insert new ID, and cascade/shift the others
         if (position === 'marianoMainId') {
-            newConfig.marianoMainId = selectedNews.id;
-        } else if (position === 'marianoListIds' && index !== undefined) {
-            const list = [...newConfig.marianoListIds];
-            list[index] = selectedNews.id;
-            newConfig.marianoListIds = list;
-        } else if (position === 'heroTopIds' && index !== undefined) {
-            const list = [...newConfig.heroTopIds];
-            list[index] = selectedNews.id;
-            newConfig.heroTopIds = list;
-        } else if (position === 'heroSideIds' && index !== undefined) {
-            const list = [...newConfig.heroSideIds];
-            list[index] = selectedNews.id;
-            newConfig.heroSideIds = list;
+            const oldMain = newConfig.marianoMainId;
+            newConfig.marianoMainId = id;
+
+            // If there was a news in Main, it cascades to List[0], pushing others down
+            if (oldMain) {
+                newConfig.marianoListIds.unshift(oldMain);
+                newConfig.marianoListIds = newConfig.marianoListIds.slice(0, 4); // Keep only 4
+            }
+        }
+        else if (position === 'marianoListIds' && index !== undefined) {
+            // Insert at specific index, pushing existing ones down
+            newConfig.marianoListIds.splice(index, 0, id);
+            newConfig.marianoListIds = newConfig.marianoListIds.slice(0, 4);
+        }
+        else if (position === 'heroTopIds' && index !== undefined) {
+            newConfig.heroTopIds.splice(index, 0, id);
+            newConfig.heroTopIds = newConfig.heroTopIds.slice(0, 2);
+        }
+        else if (position === 'heroSideIds' && index !== undefined) {
+            newConfig.heroSideIds.splice(index, 0, id);
+            newConfig.heroSideIds = newConfig.heroSideIds.slice(0, 2);
         }
 
         await onUpdateHomeConfig(newConfig);

@@ -12,6 +12,8 @@ export interface NewsItem {
   section?: string;
   isLarge?: boolean;
   status?: NewsStatus;
+  authorName?: string;
+  authorAvatar?: string;
 }
 
 export interface VideoItem {

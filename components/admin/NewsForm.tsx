@@ -222,6 +222,67 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                         </div>
                     </div>
 
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+                        <label className="text-sm font-bold text-gray-500 uppercase tracking-wider block border-b pb-2">Sobre o Autor</label>
+
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Nome do Autor</label>
+                                <input
+                                    type="text"
+                                    name="authorName"
+                                    value={formData.authorName || ''}
+                                    onChange={handleChange}
+                                    placeholder="Ex: Redação Hora do Piauí"
+                                    className="w-full p-3 bg-gray-50 rounded-lg font-bold border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Foto do Autor (Avatar)</label>
+                                <div className="flex items-center gap-4">
+                                    <div
+                                        onClick={() => document.getElementById('authorAvatarInput')?.click()}
+                                        className="w-16 h-16 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 hover:border-primary cursor-pointer overflow-hidden flex items-center justify-center relative group"
+                                    >
+                                        {formData.authorAvatar ? (
+                                            <img src={formData.authorAvatar} alt="Avatar" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <ImageIcon size={20} className="text-gray-400" />
+                                        )}
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                            <Upload size={12} className="text-white" />
+                                        </div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <input
+                                            type="text"
+                                            name="authorAvatar"
+                                            value={formData.authorAvatar || ''}
+                                            onChange={handleChange}
+                                            placeholder="URL da foto..."
+                                            className="w-full p-2 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                                        />
+                                        <input
+                                            type="file"
+                                            id="authorAvatarInput"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const url = await uploadImage(file);
+                                                    if (url) setFormData(prev => ({ ...prev, authorAvatar: url }));
+                                                }
+                                            }}
+                                        />
+                                        <p className="text-[10px] text-gray-400 mt-1">Clique na bola ou cole a URL ao lado</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10">
                         <div className="flex items-center gap-3 mb-2 text-primary">
                             <Eye size={20} />
