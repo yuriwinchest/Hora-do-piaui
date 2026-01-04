@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Reply } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Reply, Plus, LayoutGrid, FileText, CheckCircle2, Sliders } from 'lucide-react';
 import { Link, NavLink, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -8,7 +8,7 @@ import NewsListItem from './components/NewsListItem';
 import VideoCard from './components/VideoCard';
 import GamesBanner from './components/GamesBanner';
 import AdBanner from './components/AdBanner';
-import type { NewsItem } from './types';
+import type { NewsItem, HomeLayoutConfig } from './types';
 import {
   TOP_NEWS,
   SIDE_NEWS,
@@ -18,6 +18,11 @@ import {
   DARK_FEATURE_IMAGE,
   VIDEOS
 } from './constants';
+import { supabase } from './lib/supabase';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminNewsList from './components/admin/AdminNewsList';
+import NewsForm from './components/admin/NewsForm';
+import AdminHomeConfig from './components/admin/AdminHomeConfig';
 
 const normalizeText = (value: string) =>
   value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -59,10 +64,17 @@ const NewsFeedPage: React.FC<{ title: string; kind: 'politica' | 'geral' | 'colu
 };
 
 const VideosPage: React.FC = () => {
+  const [videos, setVideos] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    supabase.from('videos').select('*').order('created_at', { ascending: false })
+      .then(({ data }) => data && setVideos(data));
+  }, []);
+
   return (
     <PageContainer title="Vídeos">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {VIDEOS.map((video) => (
+        {videos.map((video) => (
           <VideoCard key={video.id} item={video} />
         ))}
       </div>
@@ -126,7 +138,7 @@ const NewsDetailPage: React.FC<{ items: NewsItem[] }> = ({ items: allItems }) =>
   );
 };
 
-const HomePage: React.FC<{ items: NewsItem[] }> = ({ items: allItems }) => {
+const HomePage: React.FC<{ items: NewsItem[]; config: HomeLayoutConfig }> = ({ items: allItems, config }) => {
   const videoCarouselRef = React.useRef<HTMLDivElement | null>(null);
 
   const scrollVideoCarousel = React.useCallback((direction: 'left' | 'right') => {
@@ -136,16 +148,27 @@ const HomePage: React.FC<{ items: NewsItem[] }> = ({ items: allItems }) => {
     el.scrollBy({ left: direction === 'left' ? -step : step, behavior: 'smooth' });
   }, []);
 
-  const topNews = React.useMemo(() => allItems.filter(n => ['1', '2'].includes(n.id)), [allItems]);
-  const sideNews = React.useMemo(() => allItems.filter(n => ['3', '4'].includes(n.id)), [allItems]);
-  const middleFeature = React.useMemo(() => allItems.find(n => n.id === '5') || allItems[0], [allItems]);
-  const homeMiddleList = React.useMemo(() => allItems.filter(n => n.category === 'coluna-mariano'), [allItems]);
+  const topNews = React.useMemo(() =>
+    allItems.filter(n => (config.heroTopIds || []).includes(n.id)),
+    [allItems, config.heroTopIds]);
+
+  const sideNews = React.useMemo(() =>
+    allItems.filter(n => (config.heroSideIds || []).includes(n.id)),
+    [allItems, config.heroSideIds]);
+
+  const middleFeature = React.useMemo(() =>
+    allItems.find(n => n.id === config.heroMainId) || allItems[0],
+    [allItems, config.heroMainId]);
+
+  const marianoList = React.useMemo(() =>
+    allItems.filter(n => (config.marianoListIds || []).includes(n.id)),
+    [allItems, config.marianoListIds]);
 
   return (
     <main className="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
       <h1 className="text-4xl md:text-5xl font-medium mb-8 font-serif leading-tight">
         <span className="bg-[#00C24A] text-white px-2 box-decoration-clone leading-[1.3] inline-block">
-          Trump anuncia ataque à Venezuela
+          {config.mainHeadline}
         </span>
       </h1>
 
@@ -231,7 +254,7 @@ const HomePage: React.FC<{ items: NewsItem[] }> = ({ items: allItems }) => {
 
         {/* 3. Side List - Aligns with photo height on desktop */}
         <div className="lg:col-span-7 order-3 lg:order-2 self-stretch flex flex-col justify-between py-0">
-          {homeMiddleList.slice(0, 4).map((item) => (
+          {marianoList.slice(0, 4).map((item) => (
             <NewsListItem key={item.id} item={item} />
           ))}
         </div>
@@ -272,50 +295,77 @@ const HomePage: React.FC<{ items: NewsItem[] }> = ({ items: allItems }) => {
         <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-200 pb-2">
           Assista aos vídeos de hoje
         </h3>
-        <div className="md:hidden relative -mx-4">
-          <button
-            type="button"
-            aria-label="Vídeos anteriores"
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-gray-200 shadow-sm rounded-full p-2"
-            onClick={() => scrollVideoCarousel('left')}
-          >
-            <ChevronLeft size={18} className="text-gray-800" />
-          </button>
-          <button
-            type="button"
-            aria-label="Próximos vídeos"
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-gray-200 shadow-sm rounded-full p-2"
-            onClick={() => scrollVideoCarousel('right')}
-          >
-            <ChevronRight size={18} className="text-gray-800" />
-          </button>
-
-          <div
-            ref={videoCarouselRef}
-            className="px-4 overflow-x-scroll flex flex-nowrap gap-4 snap-x snap-mandatory pb-2 touch-pan-x"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-          >
-            {VIDEOS.map((video) => (
-              <div key={video.id} className="w-44 flex-shrink-0 snap-start">
-                <VideoCard item={video} />
-              </div>
-            ))}
-          </div>
-        </div>
+        <DynamicVideoCarousel scrollVideoCarousel={scrollVideoCarousel} videoCarouselRef={videoCarouselRef} />
         <div className="hidden md:grid grid-cols-3 lg:grid-cols-5 gap-4">
-          {VIDEOS.map((video) => (
-            <VideoCard key={video.id} item={video} />
-          ))}
+          <VideoList limit={5} />
         </div>
       </div>
     </main>
   );
 };
 
-import AdminLayout from './components/admin/AdminLayout';
-import AdminNewsList from './components/admin/AdminNewsList';
-import NewsForm from './components/admin/NewsForm';
-import { Plus, LayoutGrid, FileText, CheckCircle2 } from 'lucide-react';
+const DynamicVideoCarousel: React.FC<{
+  scrollVideoCarousel: (dir: 'left' | 'right') => void,
+  videoCarouselRef: React.RefObject<HTMLDivElement>
+}> = ({ scrollVideoCarousel, videoCarouselRef }) => {
+  const [videos, setVideos] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    supabase.from('videos').select('*').order('created_at', { ascending: false }).limit(10)
+      .then(({ data }) => data && setVideos(data));
+  }, []);
+
+  if (videos.length === 0) return null;
+
+  return (
+    <div className="md:hidden relative -mx-4">
+      <button
+        type="button"
+        aria-label="Vídeos anteriores"
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-gray-200 shadow-sm rounded-full p-2"
+        onClick={() => scrollVideoCarousel('left')}
+      >
+        <ChevronLeft size={18} className="text-gray-800" />
+      </button>
+      <button
+        type="button"
+        aria-label="Próximos vídeos"
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 border border-gray-200 shadow-sm rounded-full p-2"
+        onClick={() => scrollVideoCarousel('right')}
+      >
+        <ChevronRight size={18} className="text-gray-800" />
+      </button>
+
+      <div
+        ref={videoCarouselRef}
+        className="px-4 overflow-x-scroll flex flex-nowrap gap-4 snap-x snap-mandatory pb-2 touch-pan-x"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
+        {videos.map((video) => (
+          <div key={video.id} className="w-44 flex-shrink-0 snap-start">
+            <VideoCard item={video} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const VideoList: React.FC<{ limit?: number }> = ({ limit = 5 }) => {
+  const [videos, setVideos] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    supabase.from('videos').select('*').order('created_at', { ascending: false }).limit(limit)
+      .then(({ data }) => data && setVideos(data));
+  }, [limit]);
+
+  if (videos.length === 0) return null;
+  return (
+    <>
+      {videos.map((video) => (
+        <VideoCard key={video.id} item={video} />
+      ))}
+    </>
+  );
+};
 
 const AdminDashboard: React.FC<{ items: NewsItem[] }> = ({ items }) => {
   const publishedCount = items.filter(i => i.status === 'published').length;
@@ -349,7 +399,7 @@ const AdminDashboard: React.FC<{ items: NewsItem[] }> = ({ items }) => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
           <div>
             <h3 className="text-xl font-black text-gray-900 mb-2">Novo Conteúdo</h3>
@@ -361,6 +411,20 @@ const AdminDashboard: React.FC<{ items: NewsItem[] }> = ({ items }) => {
           >
             <Plus size={20} />
             Nova Notícia
+          </Link>
+        </div>
+
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+          <div>
+            <h3 className="text-xl font-black text-gray-900 mb-2">Capa do Site</h3>
+            <p className="text-gray-500 font-bold mb-6 text-sm">Configure os destaques da página inicial.</p>
+          </div>
+          <Link
+            to="/admin/layout"
+            className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl border-2 border-black font-black hover:bg-gray-50 transition-all w-full"
+          >
+            <Sliders size={20} />
+            Configurar Home
           </Link>
         </div>
 
@@ -378,38 +442,211 @@ const AdminDashboard: React.FC<{ items: NewsItem[] }> = ({ items }) => {
 };
 
 const App: React.FC = () => {
-  const [allNews, setAllNews] = React.useState<NewsItem[]>(() => {
-    // Initialize status for existing news
-    const items = [...TOP_NEWS, ...SIDE_NEWS, MIDDLE_FEATURE, ...MIDDLE_LIST];
-    const map = new Map<string, NewsItem>();
-    for (const item of items) {
-      if (!map.has(item.id)) {
-        map.set(item.id, { ...item, status: 'published' });
-      }
-    }
-    return Array.from(map.values());
+  const [homeConfig, setHomeConfig] = React.useState<HomeLayoutConfig>({
+    mainHeadline: 'Carregando...',
+    heroMainId: '',
+    heroTopIds: [],
+    heroSideIds: [],
+    marianoMainId: '',
+    marianoListIds: []
   });
 
-  const handleSaveNews = (item: NewsItem) => {
+  const [allNews, setAllNews] = React.useState<NewsItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  // Fetch initial data
+  React.useEffect(() => {
+    async function fetchData() {
+      try {
+        // 1. Fetch News
+        const { data: newsData, error: newsError } = await supabase
+          .from('news')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (newsError) throw newsError;
+
+        // If DB is empty, seed it with constants (first run)
+        if (!newsData || newsData.length === 0) {
+          const initialItems = [...TOP_NEWS, ...SIDE_NEWS, MIDDLE_FEATURE, ...MIDDLE_LIST];
+          const { data: seededData } = await supabase.from('news').insert(
+            initialItems.map(n => ({
+              id: n.id,
+              title: n.title,
+              image: n.image,
+              description: n.description,
+              content: n.content,
+              category: n.category,
+              section: n.section,
+              date: n.date,
+              time: n.time,
+              is_large: n.isLarge,
+              status: 'published'
+            }))
+          ).select();
+          if (seededData) {
+            setAllNews(seededData.map(mapNewsFromDb));
+          }
+        } else {
+          setAllNews(newsData.map(mapNewsFromDb));
+        }
+
+        // Seed Videos if empty
+        const { data: videosData } = await supabase.from('videos').select('id');
+        if (!videosData || videosData.length === 0) {
+          await supabase.from('videos').insert(
+            VIDEOS.map(v => ({
+              title: v.title,
+              image: v.image,
+              thumbnail: v.thumbnail,
+              url: v.url,
+              duration: v.duration,
+              tag: v.tag,
+              tag_color: v.tagColor
+            }))
+          );
+        }
+
+        // 2. Fetch Home Config
+        const { data: configData, error: configError } = await supabase
+          .from('home_layout')
+          .select('*')
+          .eq('id', 1)
+          .single();
+
+        if (configError && configError.code !== 'PGRST116') throw configError;
+        if (configData) {
+          setHomeConfig({
+            mainHeadline: configData.main_headline,
+            heroMainId: configData.hero_main_id,
+            heroTopIds: configData.hero_top_ids || [],
+            heroSideIds: configData.hero_side_ids || [],
+            marianoMainId: configData.mariano_main_id,
+            marianoListIds: configData.mariano_list_ids || []
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="font-black text-gray-500 uppercase tracking-widest text-xs animate-pulse">Carregando dados...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const mapNewsFromDb = (n: any): NewsItem => ({
+    id: n.id,
+    title: n.title,
+    image: n.image,
+    description: n.description,
+    content: n.content,
+    category: n.category,
+    section: n.section,
+    date: n.date,
+    time: n.time,
+    isLarge: n.is_large,
+    status: n.status
+  });
+
+  const handleSaveNews = async (item: NewsItem) => {
+    const dbItem = {
+      title: item.title,
+      image: item.image,
+      description: item.description,
+      content: item.content,
+      category: item.category,
+      section: item.section,
+      date: item.date,
+      time: item.time,
+      is_large: item.isLarge,
+      status: item.status,
+      updated_at: new Date().toISOString()
+    };
+
+    let query;
+    if (item.id && item.id.length > 5) { // Assuming UUID length
+      query = supabase.from('news').update(dbItem).eq('id', item.id);
+    } else {
+      query = supabase.from('news').insert([dbItem]);
+    }
+
+    const { data, error } = await query.select().single();
+
+    if (error) {
+      alert('Erro ao salvar notícia: ' + error.message);
+      return;
+    }
+
+    const savedItem = mapNewsFromDb(data);
     setAllNews(prev => {
-      const index = prev.findIndex(n => n.id === item.id);
+      const index = prev.findIndex(n => n.id === savedItem.id);
       if (index >= 0) {
         const updated = [...prev];
-        updated[index] = item;
+        updated[index] = savedItem;
         return updated;
       }
-      return [item, ...prev];
+      return [savedItem, ...prev];
     });
   };
 
-  const handleDeleteNews = (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir esta notícia?')) {
-      setAllNews(prev => prev.filter(n => n.id !== id));
+  const handleDeleteNews = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir esta notícia?')) return;
+
+    const { error } = await supabase.from('news').delete().eq('id', id);
+
+    if (error) {
+      alert('Erro ao excluir: ' + error.message);
+      return;
     }
+
+    setAllNews(prev => prev.filter(n => n.id !== id));
   };
 
-  const handlePublishNews = (id: string) => {
+  const handlePublishNews = async (id: string) => {
+    const { error } = await supabase
+      .from('news')
+      .update({ status: 'published' })
+      .eq('id', id);
+
+    if (error) {
+      alert('Erro ao publicar: ' + error.message);
+      return;
+    }
+
     setAllNews(prev => prev.map(n => n.id === id ? { ...n, status: 'published' } : n));
+  };
+
+  const handleUpdateConfig = async (newConfig: HomeLayoutConfig) => {
+    const { error } = await supabase
+      .from('home_layout')
+      .upsert({
+        id: 1,
+        main_headline: newConfig.mainHeadline,
+        hero_main_id: newConfig.heroMainId,
+        hero_top_ids: newConfig.heroTopIds,
+        hero_side_ids: newConfig.heroSideIds,
+        mariano_main_id: newConfig.marianoMainId,
+        mariano_list_ids: newConfig.marianoListIds
+      });
+
+    if (error) {
+      alert('Erro ao salvar configuração: ' + error.message);
+      return;
+    }
+
+    setHomeConfig(newConfig);
   };
 
   const NewsEditorWrapper: React.FC = () => {
@@ -429,6 +666,13 @@ const App: React.FC = () => {
           <AdminLayout>
             <Routes>
               <Route path="/" element={<AdminDashboard items={allNews} />} />
+              <Route path="/layout" element={
+                <AdminHomeConfig
+                  items={allNews}
+                  config={homeConfig}
+                  onUpdate={handleUpdateConfig}
+                />
+              } />
               <Route path="/noticias" element={
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
@@ -469,7 +713,7 @@ const App: React.FC = () => {
           <>
             <Header />
             <Routes>
-              <Route path="/" element={<HomePage items={publishedNews} />} />
+              <Route path="/" element={<HomePage items={publishedNews} config={homeConfig} />} />
               <Route path="/politica" element={<NewsFeedPage title="Política" kind="politica" items={publishedNews} />} />
               <Route path="/geral" element={<NewsFeedPage title="Geral" kind="geral" items={publishedNews} />} />
               <Route path="/coluna-mariano" element={<NewsFeedPage title="Coluna Mariano Wikoli" kind="coluna-mariano" items={publishedNews} />} />

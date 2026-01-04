@@ -5,6 +5,7 @@ import { NavLink } from 'react-router-dom';
 const AdminSidebar: React.FC = () => {
     const navItems = [
         { label: 'Painel', href: '/admin', icon: LayoutDashboard },
+        { label: 'Configurar Home', href: '/admin/layout', icon: LayoutGrid },
         { label: 'Notícias', href: '/admin/noticias', icon: FileText },
         { label: 'Vídeos', href: '/admin/videos', icon: Video },
         { label: 'Nova Notícia', href: '/admin/noticia/nova', icon: PlusCircle },
