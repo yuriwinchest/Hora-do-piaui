@@ -43,7 +43,7 @@ export function useAuth() {
     async function fetchProfile(userId: string) {
         try {
             const { data, error } = await supabase
-                .from('profiles')
+                .from('horapiaui_profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();

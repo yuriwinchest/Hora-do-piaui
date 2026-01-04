@@ -25,7 +25,7 @@ export const useNews = () => {
 
             // 1. Fetch News
             let { data: newsData, error: newsError } = await supabase
-                .from('news')
+                .from('horapiaui_news')
                 .select('*')
                 .order('created_at', { ascending: false });
 
@@ -41,7 +41,7 @@ export const useNews = () => {
 
             if (missingItems.length > 0) {
                 console.log(`Restoring ${missingItems.length} missing default items...`);
-                const { error: seedError } = await supabase.from('news').upsert(
+                const { error: seedError } = await supabase.from('horapiaui_news').upsert(
                     missingItems.map(n => ({
                         id: n.id,
                         title: n.title,
@@ -60,7 +60,7 @@ export const useNews = () => {
                 if (seedError) {
                     console.error('Error restoring items:', seedError);
                 } else {
-                    const { data: refreshed } = await supabase.from('news').select('*').order('created_at', { ascending: false });
+                    const { data: refreshed } = await supabase.from('horapiaui_news').select('*').order('created_at', { ascending: false });
                     if (refreshed) newsData = refreshed;
                 }
             }
@@ -68,12 +68,12 @@ export const useNews = () => {
             setAllNews((newsData || []).map(mapNewsFromDb));
 
             // 2. Videos
-            let { data: videosData } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
+            let { data: videosData } = await supabase.from('horapiaui_videos').select('*').order('created_at', { ascending: false });
             const existingVideoIds = new Set((videosData || []).map((v: any) => v.id));
             const missingVideos = VIDEOS.filter(v => !existingVideoIds.has(v.id));
 
             if (missingVideos.length > 0) {
-                await supabase.from('videos').upsert(
+                await supabase.from('horapiaui_videos').upsert(
                     missingVideos.map(v => ({
                         id: v.id,
                         title: v.title,
@@ -100,7 +100,7 @@ export const useNews = () => {
             })) || []);
 
             // 3. Config
-            const { data: configData } = await supabase.from('home_layout').select('*').eq('id', 1).single();
+            const { data: configData } = await supabase.from('horapiaui_home_layout').select('*').eq('id', 1).single();
 
             setHomeConfig({
                 mainHeadline: configData?.main_headline || 'Bem-vindo ao Hora do Piauí',
@@ -144,9 +144,9 @@ export const useNews = () => {
 
         let query;
         if (item.id && item.id.length > 5) {
-            query = supabase.from('news').update(dbItem).eq('id', item.id);
+            query = supabase.from('horapiaui_news').update(dbItem).eq('id', item.id);
         } else {
-            query = supabase.from('news').insert([dbItem]);
+            query = supabase.from('horapiaui_news').insert([dbItem]);
         }
 
         const { data, error } = await query.select().single();
@@ -172,7 +172,7 @@ export const useNews = () => {
     const deleteNews = async (id: string) => {
         if (!window.confirm('Tem certeza que deseja excluir esta notícia?')) return;
 
-        const { error } = await supabase.from('news').delete().eq('id', id);
+        const { error } = await supabase.from('horapiaui_news').delete().eq('id', id);
 
         if (error) {
             alert('Erro ao excluir: ' + error.message);
@@ -184,7 +184,7 @@ export const useNews = () => {
 
     const publishNews = async (id: string) => {
         const { error } = await supabase
-            .from('news')
+            .from('horapiaui_news')
             .update({ status: 'published' })
             .eq('id', id);
 
@@ -198,7 +198,7 @@ export const useNews = () => {
 
     const updateHomeConfig = async (newConfig: HomeLayoutConfig) => {
         const { error } = await supabase
-            .from('home_layout')
+            .from('horapiaui_home_layout')
             .upsert({
                 id: 1,
                 main_headline: newConfig.mainHeadline,
@@ -230,9 +230,9 @@ export const useNews = () => {
 
         let query;
         if (item.id && item.id.length > 5) {
-            query = supabase.from('videos').update(dbItem).eq('id', item.id);
+            query = supabase.from('horapiaui_videos').update(dbItem).eq('id', item.id);
         } else {
-            query = supabase.from('videos').insert([dbItem]);
+            query = supabase.from('horapiaui_videos').insert([dbItem]);
         }
 
         const { data, error } = await query.select().single();
@@ -266,7 +266,7 @@ export const useNews = () => {
 
     const deleteVideo = async (id: string) => {
         if (!window.confirm('Tem certeza que deseja excluir este vídeo?')) return;
-        const { error } = await supabase.from('videos').delete().eq('id', id);
+        const { error } = await supabase.from('horapiaui_videos').delete().eq('id', id);
         if (error) {
             alert('Erro ao excluir vídeo: ' + error.message);
             return;
