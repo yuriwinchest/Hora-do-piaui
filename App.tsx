@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -28,7 +28,6 @@ function ScrollToTop() {
 function App() {
   const {
     allNews,
-    videos,
     homeConfig,
     loading,
     fetchError,
@@ -67,7 +66,6 @@ function App() {
             <Header />
             <HomePage
               items={allNews}
-              videos={videos}
               config={homeConfig}
             />
             <Footer />
@@ -77,7 +75,7 @@ function App() {
         <Route path="/politica" element={
           <>
             <Header />
-            <NewsFeedPage items={allNews} category="politica" />
+            <NewsFeedPage items={allNews} category="politica" title="Política" />
             <Footer />
           </>
         } />
@@ -85,7 +83,7 @@ function App() {
         <Route path="/policia" element={
           <>
             <Header />
-            <NewsFeedPage items={allNews} category="policia" />
+            <NewsFeedPage items={allNews} category="policia" title="Polícia" />
             <Footer />
           </>
         } />
@@ -93,7 +91,7 @@ function App() {
         <Route path="/geral" element={
           <>
             <Header />
-            <NewsFeedPage items={allNews} category="geral" />
+            <NewsFeedPage items={allNews} category="geral" title="Geral" />
             <Footer />
           </>
         } />
@@ -101,7 +99,7 @@ function App() {
         <Route path="/videos" element={
           <>
             <Header />
-            <VideosPage videos={videos} />
+            <VideosPage />
             <Footer />
           </>
         } />
@@ -109,7 +107,7 @@ function App() {
         <Route path="/noticia/:slug" element={
           <>
             <Header />
-            <NewsDetailPage />
+            <NewsDetailPage items={allNews} />
             <Footer />
           </>
         } />
@@ -133,19 +131,20 @@ function App() {
 
         <Route path="/admin/noticia/nova" element={
           <AdminLayout>
-            <AdminNewsEditor onSave={saveNews} />
+            <AdminNewsEditor items={allNews} onSave={saveNews} />
           </AdminLayout>
         } />
 
         <Route path="/admin/noticia/:id" element={
           <AdminLayout>
-            <AdminNewsEditor onSave={saveNews} />
+            <AdminNewsEditor items={allNews} onSave={saveNews} />
           </AdminLayout>
         } />
 
         <Route path="/admin/layout" element={
           <AdminLayout>
             <AdminLayoutPage
+              items={allNews}
               config={homeConfig}
               onUpdate={updateHomeConfig}
             />

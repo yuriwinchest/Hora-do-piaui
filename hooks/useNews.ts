@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { NewsItem, HomeLayoutConfig } from '../types';
+import { NewsItem, HomeLayoutConfig, VideoItem } from '../types';
 import { TOP_NEWS, SIDE_NEWS, MIDDLE_FEATURE, MIDDLE_LIST, VIDEOS } from '../constants';
 import { mapNewsFromDb } from '../utils/mappers';
 
 export const useNews = () => {
     const [allNews, setAllNews] = useState<NewsItem[]>([]);
+    const [videos, setVideos] = useState<VideoItem[]>([]);
     const [homeConfig, setHomeConfig] = useState<HomeLayoutConfig>({
         mainHeadline: 'Bem-vindo ao Hora do Piauí',
         heroMainId: 'f47ac10b-58cc-4372-a567-0e02b2c3d475',
@@ -61,17 +62,6 @@ export const useNews = () => {
                 } else {
                     const { data: refreshed } = await supabase.from('news').select('*').order('created_at', { ascending: false });
                     if (refreshed) newsData = refreshed;
-
-                    // Restore layout config
-                    await supabase.from('home_layout').upsert({
-                        id: 1,
-                        main_headline: 'Bem-vindo ao Hora do Piauí',
-                        hero_main_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d475',
-                        hero_top_ids: ['f47ac10b-58cc-4372-a567-0e02b2c3d471', 'f47ac10b-58cc-4372-a567-0e02b2c3d472'],
-                        hero_side_ids: ['f47ac10b-58cc-4372-a567-0e02b2c3d473', 'f47ac10b-58cc-4372-a567-0e02b2c3d474'],
-                        mariano_main_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d476',
-                        mariano_list_ids: ['f47ac10b-58cc-4372-a567-0e02b2c3d477', 'f47ac10b-58cc-4372-a567-0e02b2c3d478', 'f47ac10b-58cc-4372-a567-0e02b2c3d479']
-                    });
                 }
             }
 
@@ -96,6 +86,18 @@ export const useNews = () => {
                     }))
                 );
             }
+
+            // Set videos state
+            setVideos(videosData?.map((v: any) => ({
+                id: v.id,
+                title: v.title,
+                image: v.image,
+                thumbnail: v.thumbnail || v.image,
+                url: v.url,
+                duration: v.duration,
+                tag: v.tag,
+                tagColor: v.tag_color
+            })) || []);
 
             // 3. Config
             const { data: configData } = await supabase.from('home_layout').select('*').eq('id', 1).single();
@@ -215,6 +217,7 @@ export const useNews = () => {
 
     return {
         allNews,
+        videos,
         publishedNews,
         homeConfig,
         loading,

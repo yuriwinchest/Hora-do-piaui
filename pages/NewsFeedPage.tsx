@@ -35,7 +35,7 @@ const NewsFeedPage: React.FC<NewsFeedPageProps> = ({ title, category, items }) =
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredItems.map(item => (
-                    <NewsCard key={item.id} news={item} />
+                    <NewsCard key={item.id} item={item} />
                 ))}
             </div>
 

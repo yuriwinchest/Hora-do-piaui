@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, FileText, Settings, LogOut, PlusCircle, Video } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, PlusCircle, Video, LayoutGrid } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 const AdminSidebar: React.FC = () => {

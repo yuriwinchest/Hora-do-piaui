@@ -18,7 +18,7 @@ const VideosPage: React.FC = () => {
         <PageContainer title="Vídeos">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {videos.map(video => (
-                    <VideoCard key={video.id} video={video} />
+                    <VideoCard key={video.id} item={video} />
                 ))}
             </div>
         </PageContainer>

@@ -28,7 +28,7 @@ const AdminNewsPage: React.FC<AdminNewsPageProps> = ({ items, onDelete, onPublis
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <AdminNewsList news={items} onDelete={onDelete} onPublish={onPublish} />
+                <AdminNewsList items={items} onDelete={onDelete} onPublish={onPublish} />
             </div>
         </div>
     );
