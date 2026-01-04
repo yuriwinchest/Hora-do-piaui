@@ -30,7 +30,7 @@ const AdminHomeConfig: React.FC<AdminHomeConfigProps> = ({ items, config, onUpda
                                 <CheckCircle2 size={12} className="text-gray-400" />
                                 <span className="text-[10px] text-gray-400 font-black uppercase">Definido</span>
                             </div>
-                            <p className="text-xs font-black text-red-600 line-clamp-2 leading-snug">{selectedNews.title}</p>
+                            <p className="text-xs font-black text-gray-900 line-clamp-2 leading-snug">{selectedNews.title}</p>
                         </div>
                     </div>
                 ) : (
@@ -73,7 +73,7 @@ const AdminHomeConfig: React.FC<AdminHomeConfigProps> = ({ items, config, onUpda
                             type="text"
                             value={config.mainHeadline}
                             readOnly
-                            className="w-full text-2xl font-serif font-black text-red-600 p-4 bg-gray-50 rounded-2xl border-none focus:ring-0 cursor-default placeholder-gray-300"
+                            className="w-full text-2xl font-serif font-black text-gray-900 p-4 bg-gray-50 rounded-2xl border-none focus:ring-0 cursor-default placeholder-gray-300"
                         />
                     </div>
 
