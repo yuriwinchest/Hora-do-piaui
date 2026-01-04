@@ -62,7 +62,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
         }
     };
 
-    const handleSubmit = (status: NewsStatus) => {
+    const handleSubmit = async (status: NewsStatus) => {
         if (!formData.title || !formData.image) {
             alert('Por favor, preencha o título e a imagem.');
             return;
@@ -70,7 +70,9 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
 
         const newItem: NewsItem = {
             ...formData as NewsItem,
-            id: formData.id || Math.random().toString(36).substr(2, 9),
+            // If it's a new item (no ID or temp ID), send empty/undefined so DB generates it
+            // Assuming existingItem has a valid UUID if it exists
+            id: existingItem?.id || '',
             date: formData.date || new Date().toLocaleDateString('pt-BR'),
             time: formData.time || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
             status,
@@ -80,8 +82,13 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
             authorRole: profile?.role || formData.authorRole
         };
 
-        onSave(newItem);
-        navigate('/admin/noticias');
+        try {
+            await onSave(newItem);
+            navigate('/admin/noticias');
+        } catch (error) {
+            console.error("Error saving news:", error);
+            // Alert is handled in onSave/useNews
+        }
     };
 
     const quillModules = {

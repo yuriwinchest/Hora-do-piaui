@@ -144,9 +144,17 @@ export const useNews = () => {
         };
 
         let query;
-        if (item.id && item.id.length > 5) {
+        // UUIDs are 36 chars. If it's shorter, it's likely a new item or invalid ID.
+        if (item.id && item.id.length > 20) {
             query = supabase.from('horapiaui_news').update(dbItem).eq('id', item.id);
         } else {
+            // Remove ID from insert payload to let DB generate UUID
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, ...toInsert } = item;
+
+            // Re-construct dbItem without ID for insert (though dbItem defined above doesn't have ID, it's fine)
+            // Wait, dbItem above doesn't have 'id' property. It's clean.
+            // So we can just insert dbItem.
             query = supabase.from('horapiaui_news').insert([dbItem]);
         }
 
@@ -154,8 +162,16 @@ export const useNews = () => {
 
         if (error) {
             console.error('FINAL UPDATE/INSERT ERROR:', error);
-            alert(`Erro ao salvar notícia:\nMessage: ${error.message}\nCode: ${error.code || 'N/A'}\nDetails: ${error.details || 'N/A'}\nHint: ${error.hint || 'N/A'}`);
-            return;
+            let userMessage = 'Erro ao salvar notícia.';
+
+            if (error.code === 'PGRST204') {
+                userMessage = 'Erro interno: Colunas do banco de dados não correspondem ao formulário. (PGRST204)';
+            } else if (error.message) {
+                userMessage += ` Detalhe: ${error.message}`;
+            }
+
+            alert(userMessage);
+            throw error; // Propagate error so caller knows it failed
         }
 
         const savedItem = mapNewsFromDb(data);
