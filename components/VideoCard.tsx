@@ -10,7 +10,7 @@ const getEmbedUrl = (url: string | undefined): string | null => {
   if (!url) return null;
 
   // YouTube
-  const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
   if (ytMatch) {
     return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
   }
@@ -30,6 +30,12 @@ const VideoCard: React.FC<VideoCardProps> = ({ item }) => {
   const embedUrl = getEmbedUrl(item.url);
   const isInstagram = item.url?.includes('instagram.com');
 
+  // Para Instagram, se não tiver imagem definida manualmente, mostramos o iframe direto
+  // pois o iframe do Instagram já serve como thumbnail/preview.
+  // Para YouTube, preferimos a imagem estática leve primeiro.
+  const showIframeImmediately = isInstagram && !item.image;
+  const shouldRenderIframe = isPlaying || showIframeImmediately;
+
   const handlePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -44,13 +50,13 @@ const VideoCard: React.FC<VideoCardProps> = ({ item }) => {
     <div className="group flex flex-col gap-2">
       <div
         className="relative aspect-[3/4] lg:aspect-square overflow-hidden rounded-lg shadow-sm bg-black"
-        onClick={!isPlaying ? handlePlay : undefined}
+        onClick={(!shouldRenderIframe && !isPlaying) ? handlePlay : undefined}
       >
-        {isPlaying && embedUrl ? (
+        {shouldRenderIframe && embedUrl ? (
           <iframe
             src={embedUrl}
             title={item.title}
-            className="w-full h-full absolute inset-0 border-none"
+            className="w-full h-full absolute inset-0 border-none bg-white"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />

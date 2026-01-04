@@ -8,7 +8,7 @@ const VideosPage: React.FC = () => {
 
     useEffect(() => {
         const fetch = async () => {
-            const { data } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
+            const { data } = await supabase.from('horapiaui_videos').select('*').order('created_at', { ascending: false });
             if (data) setVideos(data);
         };
         fetch();

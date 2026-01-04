@@ -41,7 +41,7 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
         setExtracting(true);
         try {
             // YouTube Thumbnail
-            const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
             if (ytMatch) {
                 const id = ytMatch[1];
                 const thumb = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
@@ -81,14 +81,19 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
         e.preventDefault();
         setLoading(true);
 
-        // Validation - Allow image to be empty if it's Instagram?
-        // But the list view needs an image.
-        if (!formData.image && (!formData.url || !formData.url.includes('instagram.com'))) {
-            // If manual upload not done and NOT instagram (where we assume maybe embed works), reject.
-            // Actually, list view always needs image.
-            // If IG, user must upload cover or we use a placeholder.
-            // Given user expectation "ele traz", if it fails, they will see empty.
-            // I'll enforce logic: if no image, specific error.
+        // Validation - Allow image to be empty if it's Instagram
+        const isInstagram = formData.url?.includes('instagram.com');
+
+        if (!formData.title) {
+            alert('O título é obrigatório.');
+            setLoading(false);
+            return;
+        }
+
+        if (!formData.image && !isInstagram) {
+            alert('Por favor, adicione uma imagem de capa ou use um link do YouTube para gerar automaticamente.');
+            setLoading(false);
+            return;
         }
 
         try {
