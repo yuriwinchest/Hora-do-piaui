@@ -22,16 +22,7 @@ import {
 const normalizeText = (value: string) =>
   value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-const getAllNews = (): NewsItem[] => {
-  const items: NewsItem[] = [...TOP_NEWS, ...SIDE_NEWS, MIDDLE_FEATURE, ...MIDDLE_LIST];
-  const map = new Map<string, NewsItem>();
-  for (const item of items) {
-    map.set(item.id, item);
-  }
-  return Array.from(map.values());
-};
 
-const ALL_NEWS = getAllNews();
 
 const PageContainer: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => {
   return (
@@ -44,11 +35,11 @@ const PageContainer: React.FC<{ title: string; children: React.ReactNode }> = ({
   );
 };
 
-const NewsFeedPage: React.FC<{ title: string; kind: 'politica' | 'geral' | 'coluna-mariano' }> = ({ title, kind }) => {
+const NewsFeedPage: React.FC<{ title: string; kind: 'politica' | 'geral' | 'coluna-mariano'; items: NewsItem[] }> = ({ title, kind, items: allItems }) => {
   const items = React.useMemo(() => {
-    if (kind === 'coluna-mariano') return ALL_NEWS.filter((n) => n.category === 'coluna-mariano');
-    return ALL_NEWS.filter((n) => normalizeText(n.section ?? '') === kind);
-  }, [kind]);
+    if (kind === 'coluna-mariano') return allItems.filter((n) => n.category === 'coluna-mariano');
+    return allItems.filter((n) => normalizeText(n.section ?? '') === kind);
+  }, [kind, allItems]);
 
   return (
     <PageContainer title={title}>
@@ -79,10 +70,10 @@ const VideosPage: React.FC = () => {
   );
 };
 
-const NewsDetailPage: React.FC = () => {
+const NewsDetailPage: React.FC<{ items: NewsItem[] }> = ({ items: allItems }) => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const item = React.useMemo(() => ALL_NEWS.find((n) => n.id === id), [id]);
+  const item = React.useMemo(() => allItems.find((n) => n.id === id), [id, allItems]);
 
   if (!item) {
     return (
@@ -121,16 +112,21 @@ const NewsDetailPage: React.FC = () => {
         {item.time && <span>{item.time}</span>}
       </div>
 
-      {item.description && (
-        <p className="text-base text-gray-800 font-sans leading-relaxed">
+      {item.content ? (
+        <div
+          className="prose prose-lg max-w-none text-gray-800 font-sans leading-relaxed news-content"
+          dangerouslySetInnerHTML={{ __html: item.content }}
+        />
+      ) : item.description ? (
+        <p className="text-lg text-gray-800 font-sans leading-relaxed">
           {item.description}
         </p>
-      )}
+      ) : null}
     </PageContainer>
   );
 };
 
-const HomePage: React.FC = () => {
+const HomePage: React.FC<{ items: NewsItem[] }> = ({ items: allItems }) => {
   const videoCarouselRef = React.useRef<HTMLDivElement | null>(null);
 
   const scrollVideoCarousel = React.useCallback((direction: 'left' | 'right') => {
@@ -140,10 +136,10 @@ const HomePage: React.FC = () => {
     el.scrollBy({ left: direction === 'left' ? -step : step, behavior: 'smooth' });
   }, []);
 
-  const homeMiddleList = React.useMemo(
-    () => MIDDLE_LIST.filter((item) => item.category === 'coluna-mariano'),
-    []
-  );
+  const topNews = React.useMemo(() => allItems.filter(n => ['1', '2'].includes(n.id)), [allItems]);
+  const sideNews = React.useMemo(() => allItems.filter(n => ['3', '4'].includes(n.id)), [allItems]);
+  const middleFeature = React.useMemo(() => allItems.find(n => n.id === '5') || allItems[0], [allItems]);
+  const homeMiddleList = React.useMemo(() => allItems.filter(n => n.category === 'coluna-mariano'), [allItems]);
 
   return (
     <main className="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
@@ -156,7 +152,7 @@ const HomePage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 border-b border-gray-200 pb-12">
         <div className="lg:col-span-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-            {TOP_NEWS.map((item) => (
+            {topNews.map((item) => (
               <Link key={item.id} to={`/noticia/${item.id}`} className="group block h-full">
                 <div className="h-full relative flex flex-col">
                   <div className="overflow-hidden rounded-lg mb-3 bg-gray-100 shadow-md aspect-[4/3]">
@@ -177,7 +173,7 @@ const HomePage: React.FC = () => {
 
         <div className="lg:col-span-4 pl-0 lg:pl-8 lg:border-l border-gray-200 flex flex-col justify-between">
           <div className="divide-y divide-gray-100 h-full flex flex-col justify-between">
-            {SIDE_NEWS.map((item) => (
+            {sideNews.map((item) => (
               <div key={item.id} className="py-2 first:pt-0 last:pb-0 h-full">
                 <NewsCard item={item} variant="compact" showDescription={true} />
               </div>
@@ -213,11 +209,11 @@ const HomePage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 mb-12 items-start">
         {/* 1. Main Photo */}
         <div className="lg:col-span-5 order-1 w-full">
-          <Link to={`/noticia/${MIDDLE_FEATURE.id}`} className="group block">
+          <Link to={`/noticia/${middleFeature.id}`} className="group block">
             <div className="overflow-hidden rounded-lg bg-gray-100 shadow-md aspect-[7/8] relative">
               <img
-                src={MIDDLE_FEATURE.image}
-                alt={MIDDLE_FEATURE.title}
+                src={middleFeature.image}
+                alt={middleFeature.title}
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 filter brightness-105 contrast-105 absolute inset-0"
               />
             </div>
@@ -226,9 +222,9 @@ const HomePage: React.FC = () => {
 
         {/* 2. Main Title (Mobile only here, Desktop below) */}
         <div className="lg:hidden order-2 mt-4 mb-6">
-          <Link to={`/noticia/${MIDDLE_FEATURE.id}`} className="group block">
+          <Link to={`/noticia/${middleFeature.id}`} className="group block">
             <h2 className="text-2xl text-black font-bold font-serif leading-snug group-hover:text-primary transition-colors">
-              {MIDDLE_FEATURE.title}
+              {middleFeature.title}
             </h2>
           </Link>
         </div>
@@ -242,9 +238,9 @@ const HomePage: React.FC = () => {
 
         {/* 4. Main Title (Desktop only here) */}
         <div className="hidden lg:block lg:col-span-5 order-4 mt-3">
-          <Link to={`/noticia/${MIDDLE_FEATURE.id}`} className="group block">
+          <Link to={`/noticia/${middleFeature.id}`} className="group block">
             <h2 className="text-xl text-black font-bold font-serif leading-snug group-hover:text-primary transition-colors">
-              {MIDDLE_FEATURE.title}
+              {middleFeature.title}
             </h2>
           </Link>
         </div>
@@ -316,20 +312,174 @@ const HomePage: React.FC = () => {
   );
 };
 
+import AdminLayout from './components/admin/AdminLayout';
+import AdminNewsList from './components/admin/AdminNewsList';
+import NewsForm from './components/admin/NewsForm';
+import { Plus, LayoutGrid, FileText, CheckCircle2 } from 'lucide-react';
+
+const AdminDashboard: React.FC<{ items: NewsItem[] }> = ({ items }) => {
+  const publishedCount = items.filter(i => i.status === 'published').length;
+  const draftCount = items.filter(i => i.status === 'draft').length;
+
+  const stats = [
+    { label: 'Publicadas', value: publishedCount, icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-50' },
+    { label: 'Rascunhos', value: draftCount, icon: FileText, color: 'text-amber-500', bg: 'bg-amber-50' },
+    { label: 'Geral', value: items.filter(i => i.category === 'geral').length, icon: LayoutGrid, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { label: 'Política', value: items.filter(i => i.category === 'politica').length, icon: FileText, color: 'text-red-500', bg: 'bg-red-50' },
+  ];
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-700">
+      <div>
+        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Painel de Controle</h1>
+        <p className="text-gray-500 font-bold">Bem-vindo de volta ao editor do Hora Piauí.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, i) => (
+          <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className={`${stat.bg} ${stat.color} p-3 rounded-xl`}>
+              <stat.icon size={24} />
+            </div>
+            <div>
+              <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
+              <p className="text-2xl font-black text-gray-900">{stat.value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+          <div>
+            <h3 className="text-xl font-black text-gray-900 mb-2">Novo Conteúdo</h3>
+            <p className="text-gray-500 font-bold mb-6 text-sm">Crie uma nova notícia em qualquer categoria.</p>
+          </div>
+          <Link
+            to="/admin/noticia/nova"
+            className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-black text-white font-black hover:bg-gray-800 transition-all shadow-xl shadow-black/10 w-full"
+          >
+            <Plus size={20} />
+            Nova Notícia
+          </Link>
+        </div>
+
+        <div className="bg-primary/5 p-8 rounded-2xl border border-primary/10 flex flex-col justify-between">
+          <div>
+            <h3 className="text-xl font-black text-primary mb-2">Tutorial Rápido</h3>
+            <p className="text-primary/70 font-bold mb-6 text-sm leading-relaxed">
+              Você pode salvar rascunhos sem que eles apareçam no site. Quando estiver tudo pronto, clique em "Publicar" para que a notícia fique visível para os leitores.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
+  const [allNews, setAllNews] = React.useState<NewsItem[]>(() => {
+    // Initialize status for existing news
+    const items = [...TOP_NEWS, ...SIDE_NEWS, MIDDLE_FEATURE, ...MIDDLE_LIST];
+    const map = new Map<string, NewsItem>();
+    for (const item of items) {
+      if (!map.has(item.id)) {
+        map.set(item.id, { ...item, status: 'published' });
+      }
+    }
+    return Array.from(map.values());
+  });
+
+  const handleSaveNews = (item: NewsItem) => {
+    setAllNews(prev => {
+      const index = prev.findIndex(n => n.id === item.id);
+      if (index >= 0) {
+        const updated = [...prev];
+        updated[index] = item;
+        return updated;
+      }
+      return [item, ...prev];
+    });
+  };
+
+  const handleDeleteNews = (id: string) => {
+    if (window.confirm('Tem certeza que deseja excluir esta notícia?')) {
+      setAllNews(prev => prev.filter(n => n.id !== id));
+    }
+  };
+
+  const handlePublishNews = (id: string) => {
+    setAllNews(prev => prev.map(n => n.id === id ? { ...n, status: 'published' } : n));
+  };
+
+  const NewsEditorWrapper: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    const item = allNews.find(n => n.id === id);
+    return <NewsForm onSave={handleSaveNews} existingItem={item} />;
+  };
+
+  // Filter published news for the public pages
+  const publishedNews = React.useMemo(() => allNews.filter(n => n.status === 'published'), [allNews]);
+
   return (
     <div className="min-h-screen flex flex-col font-sans font-bold text-gray-900">
-      <Header />
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/politica" element={<NewsFeedPage title="Política" kind="politica" />} />
-        <Route path="/geral" element={<NewsFeedPage title="Geral" kind="geral" />} />
-        <Route path="/coluna-mariano" element={<NewsFeedPage title="Coluna Mariano Wikoli" kind="coluna-mariano" />} />
-        <Route path="/videos" element={<VideosPage />} />
-        <Route path="/noticia/:id" element={<NewsDetailPage />} />
-      </Routes>
+        {/* Admin Routes */}
+        <Route path="/admin/*" element={
+          <AdminLayout>
+            <Routes>
+              <Route path="/" element={<AdminDashboard items={allNews} />} />
+              <Route path="/noticias" element={
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h1 className="text-3xl font-black text-gray-900">Notícias</h1>
+                      <p className="text-gray-500 font-bold">Gerencie todas as publicações.</p>
+                    </div>
+                    <Link
+                      to="/admin/noticia/nova"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                    >
+                      <Plus size={18} />
+                      Nova Notícia
+                    </Link>
+                  </div>
+                  <AdminNewsList
+                    items={allNews}
+                    onEdit={(item) => window.location.href = `/admin/noticia/editar/${item.id}`}
+                    onDelete={handleDeleteNews}
+                    onPublish={handlePublishNews}
+                  />
+                </div>
+              } />
+              <Route path="/noticia/nova" element={<NewsForm onSave={handleSaveNews} />} />
+              <Route path="/noticia/editar/:id" element={<NewsEditorWrapper />} />
+              <Route path="/configuracoes" element={
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                  <h1 className="text-2xl font-black text-gray-900 mb-6">Configurações Gerais</h1>
+                  <p className="text-gray-500 font-bold">Em breve: gerenciamento de banners, tags e SEO.</p>
+                </div>
+              } />
+            </Routes>
+          </AdminLayout>
+        } />
 
-      <Footer />
+        {/* Public Routes */}
+        <Route path="*" element={
+          <>
+            <Header />
+            <Routes>
+              <Route path="/" element={<HomePage items={publishedNews} />} />
+              <Route path="/politica" element={<NewsFeedPage title="Política" kind="politica" items={publishedNews} />} />
+              <Route path="/geral" element={<NewsFeedPage title="Geral" kind="geral" items={publishedNews} />} />
+              <Route path="/coluna-mariano" element={<NewsFeedPage title="Coluna Mariano Wikoli" kind="coluna-mariano" items={publishedNews} />} />
+              <Route path="/videos" element={<VideosPage />} />
+              <Route path="/noticia/:id" element={<NewsDetailPage items={publishedNews} />} />
+            </Routes>
+            <Footer />
+          </>
+        } />
+      </Routes>
     </div>
   );
 };

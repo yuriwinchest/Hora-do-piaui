@@ -1,13 +1,17 @@
+export type NewsStatus = 'draft' | 'published';
+
 export interface NewsItem {
   id: string;
   title: string;
   image: string;
   description?: string;
+  content?: string;
   date?: string;
   time?: string;
   category?: string;
   section?: string;
   isLarge?: boolean;
+  status?: NewsStatus;
 }
 
 export interface VideoItem {
