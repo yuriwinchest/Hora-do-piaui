@@ -96,8 +96,8 @@ const AdminNewsPage: React.FC<AdminNewsPageProps> = ({ items, onDelete, onPublis
                         key={cat.id}
                         onClick={() => setSearchParams({ category: cat.id })}
                         className={`px-4 py-2 rounded-lg text-sm font-black whitespace-nowrap transition-colors ${currentCategory === cat.id
-                                ? 'bg-black text-white'
-                                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                            ? 'bg-black text-white'
+                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
                             }`}
                     >
                         {cat.label}
@@ -115,83 +115,164 @@ const AdminNewsPage: React.FC<AdminNewsPageProps> = ({ items, onDelete, onPublis
             </div>
 
             {/* Highlight Modal */}
+            {/* Highlight Modal */}
             {highlightModalOpen && selectedNews && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 animate-in zoom-in duration-300">
-                        <div className="flex justify-between items-start mb-6">
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full p-8 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-start mb-8 sticky top-0 bg-white z-10 pb-4 border-b border-gray-100">
                             <div>
-                                <h3 className="text-xl font-black text-gray-900">Destacar Notícia</h3>
-                                <p className="text-sm text-gray-500 font-bold mt-1 line-clamp-1">{selectedNews.title}</p>
+                                <h3 className="text-2xl font-black text-gray-900 tracking-tight">Onde essa notícia deve aparecer?</h3>
+                                <p className="text-gray-500 font-bold mt-1 line-clamp-1">Selecionado: <span className="text-black">{selectedNews.title}</span></p>
                             </div>
-                            <button onClick={() => setHighlightModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
-                                <X size={20} />
+                            <button onClick={() => setHighlightModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                <X size={24} />
                             </button>
                         </div>
 
-                        <div className="space-y-6">
-                            {/* General Sections */}
-                            <div className="space-y-3">
-                                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">Manchete 1 (Primeira Dobra)</h4>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => handleAssignPosition('heroTopIds', 0)}
-                                        className={`p-3 rounded-xl border text-left flex items-center justify-between group transition-all ${checkAssignment('heroTopIds', 0) ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-primary hover:shadow-md'}`}
-                                    >
-                                        <span className="font-bold text-sm">Esquerda 1</span>
-                                        {checkAssignment('heroTopIds', 0) && <CheckCircle2 size={16} className="text-primary" />}
-                                    </button>
-                                    <button
-                                        onClick={() => handleAssignPosition('heroTopIds', 1)}
-                                        className={`p-3 rounded-xl border text-left flex items-center justify-between group transition-all ${checkAssignment('heroTopIds', 1) ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-primary hover:shadow-md'}`}
-                                    >
-                                        <span className="font-bold text-sm">Esquerda 2</span>
-                                        {checkAssignment('heroTopIds', 1) && <CheckCircle2 size={16} className="text-primary" />}
-                                    </button>
-                                    <button
-                                        onClick={() => handleAssignPosition('heroSideIds', 0)}
-                                        className={`p-3 rounded-xl border text-left flex items-center justify-between group transition-all ${checkAssignment('heroSideIds', 0) ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-primary hover:shadow-md'}`}
-                                    >
-                                        <span className="font-bold text-sm">Lateral 1</span>
-                                        {checkAssignment('heroSideIds', 0) && <CheckCircle2 size={16} className="text-primary" />}
-                                    </button>
-                                    <button
-                                        onClick={() => handleAssignPosition('heroSideIds', 1)}
-                                        className={`p-3 rounded-xl border text-left flex items-center justify-between group transition-all ${checkAssignment('heroSideIds', 1) ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-primary hover:shadow-md'}`}
-                                    >
-                                        <span className="font-bold text-sm">Lateral 2</span>
-                                        {checkAssignment('heroSideIds', 1) && <CheckCircle2 size={16} className="text-primary" />}
-                                    </button>
+                        <div className="space-y-12">
+                            {/* Section 1: Manchete 1 (Primeira Dobra) */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="w-2 h-6 bg-red-600 rounded-sm"></span>
+                                    <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest">Seção 1: Manchetes Principais</h4>
+                                </div>
+
+                                <div className="bg-gray-100 p-6 rounded-2xl border-2 border-dashed border-gray-200">
+                                    {/* Visual Mockup of Fold 1 */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-64">
+                                        {/* Left Column (Main) - 2 Slots Stacked */}
+                                        <div className="md:col-span-2 flex flex-col gap-4 h-full">
+                                            <button
+                                                onClick={() => handleAssignPosition('heroTopIds', 0)}
+                                                className={`flex-1 rounded-xl border-2 text-left p-4 relative transition-all group hover:scale-[1.01] hover:shadow-lg ${checkAssignment('heroTopIds', 0)
+                                                    ? 'border-red-600 bg-red-50'
+                                                    : 'border-white bg-white hover:border-red-200'}`}
+                                            >
+                                                <span className="absolute top-2 left-2 px-2 py-1 bg-gray-100 rounded text-[10px] font-bold text-gray-500 uppercase">Esquerda 1</span>
+                                                <div className="mt-6 w-full h-3 bg-gray-100 rounded mb-2"></div>
+                                                <div className="w-2/3 h-3 bg-gray-100 rounded"></div>
+                                                {checkAssignment('heroTopIds', 0) && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-red-600/10 backdrop-blur-[1px] rounded-xl border-2 border-red-600">
+                                                        <CheckCircle2 size={32} className="text-red-600 drop-shadow-sm" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                            <button
+                                                onClick={() => handleAssignPosition('heroTopIds', 1)}
+                                                className={`flex-1 rounded-xl border-2 text-left p-4 relative transition-all group hover:scale-[1.01] hover:shadow-lg ${checkAssignment('heroTopIds', 1)
+                                                    ? 'border-red-600 bg-red-50'
+                                                    : 'border-white bg-white hover:border-red-200'}`}
+                                            >
+                                                <span className="absolute top-2 left-2 px-2 py-1 bg-gray-100 rounded text-[10px] font-bold text-gray-500 uppercase">Esquerda 2</span>
+                                                <div className="mt-6 w-full h-3 bg-gray-100 rounded mb-2"></div>
+                                                <div className="w-1/2 h-3 bg-gray-100 rounded"></div>
+                                                {checkAssignment('heroTopIds', 1) && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-red-600/10 backdrop-blur-[1px] rounded-xl border-2 border-red-600">
+                                                        <CheckCircle2 size={32} className="text-red-600 drop-shadow-sm" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        </div>
+
+                                        {/* Right Column (Side) - 2 Slots Stacked */}
+                                        <div className="md:col-span-1 flex flex-col gap-4 h-full">
+                                            <button
+                                                onClick={() => handleAssignPosition('heroSideIds', 0)}
+                                                className={`flex-1 rounded-xl border-2 text-left p-4 relative transition-all group hover:scale-[1.01] hover:shadow-lg ${checkAssignment('heroSideIds', 0)
+                                                    ? 'border-red-600 bg-red-50'
+                                                    : 'border-white bg-gray-50 hover:border-red-200'}`}
+                                            >
+                                                <span className="absolute top-2 left-2 px-2 py-1 bg-white rounded text-[10px] font-bold text-gray-500 uppercase">Lateral 1</span>
+                                                <div className="mt-6 flex gap-2">
+                                                    <div className="w-8 h-8 bg-gray-200 rounded shrink-0"></div>
+                                                    <div className="flex-1 space-y-1">
+                                                        <div className="w-full h-2 bg-gray-200 rounded"></div>
+                                                        <div className="w-2/3 h-2 bg-gray-200 rounded"></div>
+                                                    </div>
+                                                </div>
+                                                {checkAssignment('heroSideIds', 0) && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-red-600/10 backdrop-blur-[1px] rounded-xl border-2 border-red-600">
+                                                        <CheckCircle2 size={32} className="text-red-600 drop-shadow-sm" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                            <button
+                                                onClick={() => handleAssignPosition('heroSideIds', 1)}
+                                                className={`flex-1 rounded-xl border-2 text-left p-4 relative transition-all group hover:scale-[1.01] hover:shadow-lg ${checkAssignment('heroSideIds', 1)
+                                                    ? 'border-red-600 bg-red-50'
+                                                    : 'border-white bg-gray-50 hover:border-red-200'}`}
+                                            >
+                                                <span className="absolute top-2 left-2 px-2 py-1 bg-white rounded text-[10px] font-bold text-gray-500 uppercase">Lateral 2</span>
+                                                <div className="mt-6 flex gap-2">
+                                                    <div className="w-8 h-8 bg-gray-200 rounded shrink-0"></div>
+                                                    <div className="flex-1 space-y-1">
+                                                        <div className="w-full h-2 bg-gray-200 rounded"></div>
+                                                    </div>
+                                                </div>
+                                                {checkAssignment('heroSideIds', 1) && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-red-600/10 backdrop-blur-[1px] rounded-xl border-2 border-red-600">
+                                                        <CheckCircle2 size={32} className="text-red-600 drop-shadow-sm" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Mariano Section - Only specific categories?? Or allow all? 
-                                User said "quando eu criar a notícia ela vai pra coluna Mariano". 
-                                But technically any news *could* be put there. I'll allow all for flexibility.
-                            */}
-                            <div className="space-y-3">
-                                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">Coluna Mariano (Segunda Dobra)</h4>
-                                <div className="grid grid-cols-1 gap-3">
-                                    <button
-                                        onClick={() => handleAssignPosition('marianoMainId')}
-                                        className={`p-3 rounded-xl border text-left flex items-center justify-between group transition-all ${checkAssignment('marianoMainId') ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-500' : 'border-gray-200 hover:border-amber-500 hover:shadow-md'}`}
-                                    >
-                                        <span className="font-bold text-sm">Destaque Principal (Foto Grande)</span>
-                                        {checkAssignment('marianoMainId') && <CheckCircle2 size={16} className="text-amber-500" />}
-                                    </button>
+                            {/* Section 2: Mariano (Segunda Dobra) */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="w-2 h-6 bg-amber-500 rounded-sm"></span>
+                                    <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest">Seção 2: Coluna Mariano</h4>
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {[0, 1, 2, 3].map(idx => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => handleAssignPosition('marianoListIds', idx)}
-                                            className={`p-3 rounded-xl border text-left flex items-center justify-between group transition-all ${checkAssignment('marianoListIds', idx) ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-500' : 'border-gray-200 hover:border-amber-500 hover:shadow-md'}`}
-                                        >
-                                            <span className="font-bold text-sm">Lista {idx + 1}</span>
-                                            {checkAssignment('marianoListIds', idx) && <CheckCircle2 size={16} className="text-amber-500" />}
-                                        </button>
-                                    ))}
+
+                                <div className="bg-gray-100 p-6 rounded-2xl border-2 border-dashed border-gray-200">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-64">
+                                        {/* Main Feature */}
+                                        <div className="md:col-span-1 h-full">
+                                            <button
+                                                onClick={() => handleAssignPosition('marianoMainId')}
+                                                className={`w-full h-full rounded-xl border-2 text-left p-4 relative transition-all group hover:scale-[1.01] hover:shadow-lg ${checkAssignment('marianoMainId')
+                                                    ? 'border-amber-500 bg-amber-50'
+                                                    : 'border-white bg-white hover:border-amber-200'}`}
+                                            >
+                                                <div className="absolute inset-x-4 bottom-4 h-1/2 bg-gray-100 rounded-lg group-hover:bg-amber-100/50 transition-colors"></div>
+                                                <span className="absolute top-2 left-2 px-2 py-1 bg-gray-100 rounded text-[10px] font-bold text-gray-500 uppercase">Destaque</span>
+                                                {checkAssignment('marianoMainId') && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-amber-500/10 backdrop-blur-[1px] rounded-xl border-2 border-amber-500">
+                                                        <CheckCircle2 size={32} className="text-amber-500 drop-shadow-sm" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        </div>
+
+                                        {/* Grid 2x2 */}
+                                        <div className="md:col-span-2 grid grid-cols-2 gap-4 h-full">
+                                            {[0, 1, 2, 3].map(idx => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => handleAssignPosition('marianoListIds', idx)}
+                                                    className={`rounded-xl border-2 text-left p-3 relative transition-all group hover:scale-[1.01] hover:shadow-lg flex flex-col justify-end ${checkAssignment('marianoListIds', idx)
+                                                        ? 'border-amber-500 bg-amber-50'
+                                                        : 'border-white bg-white hover:border-amber-200'}`}
+                                                >
+                                                    <span className="absolute top-2 left-2 text-[10px] font-bold text-gray-300">#{idx + 1}</span>
+                                                    <div className="w-full h-2 bg-gray-100 rounded mb-1"></div>
+                                                    <div className="w-1/2 h-2 bg-gray-100 rounded"></div>
+
+                                                    {checkAssignment('marianoListIds', idx) && (
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-amber-500/10 backdrop-blur-[1px] rounded-xl border-2 border-amber-500">
+                                                            <CheckCircle2 size={24} className="text-amber-500 drop-shadow-sm" />
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
