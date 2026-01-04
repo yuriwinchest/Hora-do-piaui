@@ -10,6 +10,8 @@ import NewsDetailPage from './pages/NewsDetailPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminNewsPage from './pages/admin/AdminNewsPage';
 import AdminNewsEditor from './pages/admin/AdminNewsEditor';
+import AdminVideosPage from './pages/admin/AdminVideosPage';
+import AdminVideoEditor from './pages/admin/AdminVideoEditor';
 import AdminLayoutPage from './pages/admin/AdminLayoutPage';
 import AdminLayout from './components/admin/AdminLayout';
 import { useNews } from './hooks/useNews';
@@ -28,13 +30,16 @@ function ScrollToTop() {
 function App() {
   const {
     allNews,
+    videos,
     homeConfig,
     loading,
     fetchError,
     saveNews,
     deleteNews,
     publishNews,
-    updateHomeConfig
+    updateHomeConfig,
+    saveVideo,
+    deleteVideo
   } = useNews();
 
   if (loading && !allNews.length) {
@@ -138,6 +143,27 @@ function App() {
         <Route path="/admin/noticia/:id" element={
           <AdminLayout>
             <AdminNewsEditor items={allNews} onSave={saveNews} />
+          </AdminLayout>
+        } />
+
+        <Route path="/admin/videos" element={
+          <AdminLayout>
+            <AdminVideosPage
+              items={videos}
+              onDelete={deleteVideo}
+            />
+          </AdminLayout>
+        } />
+
+        <Route path="/admin/video/novo" element={
+          <AdminLayout>
+            <AdminVideoEditor items={videos} onSave={saveVideo} />
+          </AdminLayout>
+        } />
+
+        <Route path="/admin/video/:id" element={
+          <AdminLayout>
+            <AdminVideoEditor items={videos} onSave={saveVideo} />
           </AdminLayout>
         } />
 

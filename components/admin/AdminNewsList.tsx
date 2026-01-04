@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Edit2, Trash2, Calendar, Clock, Send, FileText } from 'lucide-react';
 import { NewsItem } from '../../types';
 
@@ -46,8 +47,8 @@ const AdminNewsList: React.FC<AdminNewsListProps> = ({ items, onEdit, onDelete, 
                                 <td className="px-6 py-5">
                                     <div className="flex justify-center">
                                         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${item.status === 'published'
-                                                ? 'bg-green-100 text-green-600'
-                                                : 'bg-amber-100 text-amber-600'
+                                            ? 'bg-green-100 text-green-600'
+                                            : 'bg-amber-100 text-amber-600'
                                             }`}>
                                             {item.status === 'published' ? 'Publicado' : 'Rascunho'}
                                         </span>
@@ -79,13 +80,13 @@ const AdminNewsList: React.FC<AdminNewsListProps> = ({ items, onEdit, onDelete, 
                                                 <Send size={18} />
                                             </button>
                                         )}
-                                        <button
-                                            onClick={() => onEdit(item)}
+                                        <Link
+                                            to={`/admin/noticia/${item.id}`}
                                             className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
                                             title="Editar"
                                         >
                                             <Edit2 size={18} />
-                                        </button>
+                                        </Link>
                                         <button
                                             onClick={() => onDelete(item.id)}
                                             className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"

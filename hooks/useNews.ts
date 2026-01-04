@@ -212,6 +212,63 @@ export const useNews = () => {
         setHomeConfig(newConfig);
     };
 
+    const saveVideo = async (item: VideoItem) => {
+        const dbItem = {
+            title: item.title,
+            image: item.image,
+            thumbnail: item.image, // syncing fields
+            url: item.url,
+            duration: item.duration,
+            tag: item.tag,
+            tag_color: item.tagColor
+        };
+
+        let query;
+        if (item.id && item.id.length > 5) {
+            query = supabase.from('videos').update(dbItem).eq('id', item.id);
+        } else {
+            query = supabase.from('videos').insert([dbItem]);
+        }
+
+        const { data, error } = await query.select().single();
+
+        if (error) {
+            alert('Erro ao salvar vídeo: ' + error.message);
+            return;
+        }
+
+        const savedItem: VideoItem = {
+            id: data.id,
+            title: data.title,
+            image: data.image,
+            thumbnail: data.thumbnail,
+            url: data.url,
+            duration: data.duration,
+            tag: data.tag,
+            tagColor: data.tag_color
+        };
+
+        setVideos(prev => {
+            const index = prev.findIndex(v => v.id === savedItem.id);
+            if (index >= 0) {
+                const updated = [...prev];
+                updated[index] = savedItem;
+                return updated;
+            }
+            return [savedItem, ...prev];
+        });
+    };
+
+    const deleteVideo = async (id: string) => {
+        if (!window.confirm('Tem certeza que deseja excluir este vídeo?')) return;
+        const { error } = await supabase.from('videos').delete().eq('id', id);
+        if (error) {
+            alert('Erro ao excluir vídeo: ' + error.message);
+            return;
+        }
+        setVideos(prev => prev.filter(v => v.id !== id));
+    };
+
     // Derived state
     const publishedNews = allNews.filter(n => n.status === 'published');
 
@@ -226,6 +283,8 @@ export const useNews = () => {
         deleteNews,
         publishNews,
         updateHomeConfig,
+        saveVideo,
+        deleteVideo,
         refetch: fetchData
     };
 };
