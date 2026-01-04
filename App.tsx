@@ -24,6 +24,41 @@ import AdminNewsList from './components/admin/AdminNewsList';
 import NewsForm from './components/admin/NewsForm';
 import AdminHomeConfig from './components/admin/AdminHomeConfig';
 
+const mapNewsFromDb = (n: any): NewsItem => ({
+  id: n.id,
+  title: n.title,
+  image: n.image,
+  description: n.description,
+  content: n.content,
+  category: n.category,
+  section: n.section,
+  date: n.date,
+  time: n.time,
+  isLarge: n.is_large,
+  status: n.status
+});
+
+const ErrorState: React.FC<{ message: string }> = ({ message }) => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 text-center border-t-4 border-black">
+    <div className="max-w-md space-y-4">
+      <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Sliders size={32} />
+      </div>
+      <h2 className="text-2xl font-black text-gray-900">Erro de Conexão</h2>
+      <p className="text-gray-500 font-bold leading-relaxed">{message}</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="px-6 py-3 bg-black text-white font-black rounded-xl hover:bg-gray-800 transition-all uppercase tracking-widest text-xs shadow-lg"
+      >
+        Tentar Novamente
+      </button>
+      <p className="text-[10px] text-gray-400 mt-8 leading-relaxed font-bold">
+        Se o erro persistir, verifique se as tabelas foram criadas corretamente no seu projeto Supabase.
+      </p>
+    </div>
+  </div>
+);
+
 const normalizeText = (value: string) =>
   value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
@@ -160,21 +195,15 @@ const HomePage: React.FC<{ items: NewsItem[]; config: HomeLayoutConfig }> = ({ i
     allItems.find(n => n.id === config.heroMainId) || allItems[0],
     [allItems, config.heroMainId]);
 
-  if (allNews.length === 0 && !loading && !fetchError) {
+  if (allItems.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white p-4 text-center">
+      <div className="min-h-[50vh] flex items-center justify-center p-20 text-center">
         <div className="max-w-md">
-          <h2 className="text-xl font-black text-gray-900 mb-2">Inicializando Site</h2>
-          <p className="text-gray-500 font-bold mb-4">Estamos preparando as notícias para você. Se este é o primeiro acesso, o banco está sendo configurado.</p>
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <h2 className="text-xl font-black text-gray-900 mb-2">Nenhuma notícia encontrada</h2>
+          <p className="text-gray-500 font-bold mb-4">Estamos preparando as notícias para você. Por favor, volte em instantes.</p>
         </div>
       </div>
     );
-  }
-
-  // Fallback for homepage slots during initialization
-  if (!middleFeature && publishedNews.length === 0 && !loading && !fetchError) {
-    return <div className="p-20 text-center font-bold">Nenhuma notícia publicada encontrada.</div>;
   }
 
   const marianoList = React.useMemo(() =>
@@ -480,18 +509,23 @@ const App: React.FC = () => {
   React.useEffect(() => {
     async function fetchData() {
       try {
+        console.log('Fetching news...');
         // 1. Fetch News
         const { data: newsData, error: newsError } = await supabase
           .from('news')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (newsError) throw newsError;
+        if (newsError) {
+          console.error('Error fetching news:', newsError);
+          throw newsError;
+        }
 
         // If DB is empty, seed it with constants (first run)
         if (!newsData || newsData.length === 0) {
+          console.log('News table empty, seeding with constants...');
           const initialItems = [...TOP_NEWS, ...SIDE_NEWS, MIDDLE_FEATURE, ...MIDDLE_LIST];
-          const { data: seededData } = await supabase.from('news').insert(
+          const { data: seededData, error: seedError } = await supabase.from('news').insert(
             initialItems.map(n => ({
               id: n.id,
               title: n.title,
@@ -506,6 +540,11 @@ const App: React.FC = () => {
               status: 'published'
             }))
           ).select();
+
+          if (seedError) {
+            console.error('Error seeding news:', seedError);
+            throw seedError;
+          }
           if (seededData) {
             setAllNews(seededData.map(mapNewsFromDb));
           }
@@ -514,29 +553,39 @@ const App: React.FC = () => {
         }
 
         // Seed Videos if empty
-        const { data: videosData } = await supabase.from('videos').select('id');
+        const { data: videosData, error: vSelectError } = await supabase.from('videos').select('id');
+        if (vSelectError && vSelectError.code !== 'PGRST116') {
+          console.error('Error checking videos:', vSelectError);
+        }
+
         if (!videosData || videosData.length === 0) {
-          await supabase.from('videos').insert(
+          console.log('Videos table empty, seeding...');
+          const { error: vInsertError } = await supabase.from('videos').insert(
             VIDEOS.map(v => ({
               title: v.title,
               image: v.image,
-              thumbnail: v.thumbnail,
-              url: v.url,
-              duration: v.duration,
-              tag: v.tag,
-              tag_color: v.tagColor
+              thumbnail: v.image, // Use image as fallback if thumbnail missing
+              url: v.url || '',
+              duration: v.duration || '0:00',
+              tag: v.tag || '',
+              tag_color: v.tagColor || 'bg-black'
             }))
           );
+          if (vInsertError) console.error('Error seeding videos:', vInsertError);
         }
 
         // 2. Fetch Home Config
+        console.log('Fetching home configuration...');
         const { data: configData, error: configError } = await supabase
           .from('home_layout')
           .select('*')
           .eq('id', 1)
           .single();
 
-        if (configError && configError.code !== 'PGRST116') throw configError;
+        if (configError && configError.code !== 'PGRST116') {
+          console.warn('Config fetch error (ignoring if not critical):', configError);
+        }
+
         if (configData) {
           setHomeConfig({
             mainHeadline: configData.main_headline,
@@ -548,8 +597,8 @@ const App: React.FC = () => {
           });
         }
       } catch (err: any) {
-        console.error('Error fetching data:', err);
-        setFetchError(err.message || 'Erro desconhecido ao carregar dados.');
+        console.error('Critical initialization error:', err);
+        setFetchError(err.message || 'Erro inesperado durante a inicialização.');
       } finally {
         setLoading(false);
       }
@@ -576,25 +625,18 @@ const App: React.FC = () => {
     return <ErrorState message={fetchError} />;
   }
 
-  // Handle data fetching errors
-  if (allNews.length === 0 && !loading) {
-    // If we're not loading and have no news, it might be a connectivity issue or first run 
-    // but the seeding logic should have handled it. If it's still 0, show a mini error.
+  if (allNews.length === 0 && !loading && !fetchError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white p-4 text-center">
+        <div className="max-w-md">
+          <h2 className="text-xl font-black text-gray-900 mb-2">Inicializando Site</h2>
+          <p className="text-gray-500 font-bold mb-4">Estamos preparando as notícias para você. Se este é o primeiro acesso, o banco está sendo configurado.</p>
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+        </div>
+      </div>
+    );
   }
 
-  const mapNewsFromDb = (n: any): NewsItem => ({
-    id: n.id,
-    title: n.title,
-    image: n.image,
-    description: n.description,
-    content: n.content,
-    category: n.category,
-    section: n.section,
-    date: n.date,
-    time: n.time,
-    isLarge: n.is_large,
-    status: n.status
-  });
 
   const handleSaveNews = async (item: NewsItem) => {
     const dbItem = {
@@ -761,25 +803,5 @@ const App: React.FC = () => {
   );
 };
 
-const ErrorState: React.FC<{ message: string }> = ({ message }) => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 text-center">
-    <div className="max-w-md space-y-4">
-      <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-        <Sliders size={32} />
-      </div>
-      <h2 className="text-2xl font-black text-gray-900">Erro de Conexão</h2>
-      <p className="text-gray-500 font-bold leading-relaxed">{message}</p>
-      <button
-        onClick={() => window.location.reload()}
-        className="px-6 py-3 bg-black text-white font-black rounded-xl hover:bg-gray-800 transition-all uppercase tracking-widest text-xs"
-      >
-        Tentar Novamente
-      </button>
-      <p className="text-[10px] text-gray-400 mt-8 leading-relaxed">
-        Se o erro persistir, verifique se as tabelas foram criadas corretamente no seu projeto Supabase.
-      </p>
-    </div>
-  </div>
-);
 
 export default App;
