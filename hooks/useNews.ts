@@ -68,7 +68,7 @@ export const useNews = () => {
             setAllNews((newsData || []).map(mapNewsFromDb));
 
             // 2. Videos
-            let { data: videosData } = await supabase.from('videos').select('*');
+            let { data: videosData } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
             const existingVideoIds = new Set((videosData || []).map((v: any) => v.id));
             const missingVideos = VIDEOS.filter(v => !existingVideoIds.has(v.id));
 
@@ -137,7 +137,8 @@ export const useNews = () => {
             status: item.status,
             updated_at: new Date().toISOString(),
             author_name: item.authorName,
-            author_avatar: item.authorAvatar
+            author_avatar: item.authorAvatar,
+            author_bio: item.authorBio
         };
 
         let query;

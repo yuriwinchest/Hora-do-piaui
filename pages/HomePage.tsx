@@ -18,7 +18,7 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
 
     useEffect(() => {
         const fetchVideos = async () => {
-            const { data } = await supabase.from('videos').select('*').limit(5);
+            const { data } = await supabase.from('videos').select('*').order('created_at', { ascending: false }).limit(5);
             if (data) setLatestVideos(data);
         };
         fetchVideos();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, Send, ArrowLeft, Image as ImageIcon, Eye, Upload } from 'lucide-react';
 import ReactQuill from 'react-quill';
@@ -7,6 +7,8 @@ import { NewsItem, NewsStatus } from '../../types';
 import NewsCardPreview from './NewsCardPreview';
 import { uploadImage } from '../../utils/upload';
 
+import { useAuth } from '../../hooks/useAuth';
+
 interface NewsFormProps {
     onSave: (item: NewsItem) => void;
     existingItem?: NewsItem;
@@ -14,6 +16,7 @@ interface NewsFormProps {
 
 const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
     const navigate = useNavigate();
+    const { profile } = useAuth();
     const [formData, setFormData] = useState<Partial<NewsItem>>({
         title: '',
         category: 'geral',
@@ -24,6 +27,18 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
         status: 'draft',
         ...existingItem
     });
+
+    // Auto-fill author info if creating new item and profile exists
+    useEffect(() => {
+        if (!existingItem && profile) {
+            setFormData(prev => ({
+                ...prev,
+                authorName: profile.full_name || prev.authorName,
+                authorAvatar: profile.avatar_url || prev.authorAvatar,
+                authorBio: profile.bio || prev.authorBio
+            }));
+        }
+    }, [profile, existingItem]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -279,6 +294,18 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                                         <p className="text-[10px] text-gray-400 mt-1">Clique na bola ou cole a URL ao lado</p>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Biografia do Autor</label>
+                                <textarea
+                                    name="authorBio"
+                                    value={formData.authorBio || ''}
+                                    onChange={handleChange}
+                                    rows={3}
+                                    placeholder="Breve descrição do autor..."
+                                    className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                                />
                             </div>
                         </div>
                     </div>

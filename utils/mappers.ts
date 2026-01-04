@@ -13,8 +13,11 @@ export const mapNewsFromDb = (n: any): NewsItem => ({
     isLarge: n.is_large,
     status: n.status,
     authorName: n.author_name,
-    authorAvatar: n.author_avatar
+    authorAvatar: n.author_avatar,
+    authorBio: n.author_bio, // New field mapping
+    videoUrl: n.video_url, // YouTube URL
 });
 
 export const normalizeText = (value: string) =>
     value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+

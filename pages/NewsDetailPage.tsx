@@ -59,9 +59,15 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                         <p className="font-bold text-gray-900 text-lg md:text-2xl leading-tight mb-2">
                             Por {news.authorName || "Redação Hora do Piauí"}
                         </p>
-                        <p className="text-sm md:text-base text-gray-500 font-medium bg-gray-100 inline-block px-3 py-1 rounded-full uppercase tracking-wide">
-                            Jornalismo
-                        </p>
+                        {news.authorBio ? (
+                            <p className="text-sm md:text-base text-gray-600 leading-relaxed max-w-xl">
+                                {news.authorBio}
+                            </p>
+                        ) : (
+                            <p className="text-sm md:text-base text-gray-500 font-medium bg-gray-100 inline-block px-3 py-1 rounded-full uppercase tracking-wide">
+                                Jornalismo
+                            </p>
+                        )}
                     </div>
                 </div>
 
