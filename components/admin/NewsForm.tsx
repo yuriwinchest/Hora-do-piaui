@@ -6,6 +6,7 @@ import 'react-quill/dist/quill.snow.css';
 import { NewsItem, NewsStatus } from '../../types';
 import NewsCardPreview from './NewsCardPreview';
 import { uploadImage } from '../../utils/upload';
+import { slugify } from '../../utils/slugify';
 
 import { useAuth } from '../../hooks/useAuth';
 
@@ -25,6 +26,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
         description: '',
         content: '',
         status: 'draft',
+        isUrgent: false,
         ...existingItem
     });
 
@@ -63,16 +65,15 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
     };
 
     const handleSubmit = async (status: NewsStatus) => {
-        if (!formData.title || !formData.image) {
-            alert('Por favor, preencha o título e a imagem.');
+        if (!formData.title) {
+            alert('Por favor, preencha o título.');
             return;
         }
 
         const newItem: NewsItem = {
             ...formData as NewsItem,
-            // If it's a new item (no ID or temp ID), send empty/undefined so DB generates it
-            // Assuming existingItem has a valid UUID if it exists
             id: existingItem?.id || '',
+            slug: existingItem?.slug || slugify(formData.title || ''),
             date: formData.date || new Date().toLocaleDateString('pt-BR'),
             time: formData.time || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
             status,
@@ -91,14 +92,78 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
         }
     };
 
+    const quillRef = React.useRef<ReactQuill>(null);
+
     const quillModules = {
-        toolbar: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-            ['link', 'image', 'video'],
-            ['clean']
-        ],
+        toolbar: {
+            container: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['link', 'image', 'video'],
+                ['clean']
+            ],
+            handlers: {
+                image: () => {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'file');
+                    input.setAttribute('accept', 'image/*');
+                    input.click();
+
+                    input.onchange = async () => {
+                        const file = input.files?.[0];
+                        if (file) {
+                            try {
+                                const url = await uploadImage(file);
+                                if (url) {
+                                    const credit = window.prompt('(Opcional) Digite o crédito ou descrição para esta foto:', 'FOTO: DIVULGAÇÃO');
+
+                                    const quill = quillRef.current?.getEditor();
+                                    if (quill) {
+                                        const range = quill.getSelection(true);
+
+                                        // Insert Image
+                                        quill.insertEmbed(range.index, 'image', url);
+
+                                        // Insert Caption if provided
+                                        if (credit) {
+                                            // We use a safe way to insert styled blocks. 
+                                            // Note: Quill's handling of specialized HTML can be tricky.
+                                            // A simple approach that usually works in standard setups is to insert text with attributes,
+                                            // or insert a custom block if registered.
+                                            // Here we will try to insert a new line with the caption text and apply a class or style.
+
+                                            // Move cursor after image
+                                            quill.setSelection(range.index + 1);
+
+                                            // Insert new line
+                                            quill.insertText(range.index + 1, '\n');
+
+                                            // Insert Caption text
+                                            const captionText = credit.startsWith('FOTO:') ? credit : `FOTO: ${credit}`;
+                                            quill.insertText(range.index + 2, captionText, {
+                                                'size': 'small',
+                                                'color': '#666666',
+                                                'italic': true
+                                            });
+
+                                            // Insert another new line to reset style
+                                            quill.insertText(range.index + 2 + captionText.length, '\n');
+                                            quill.setSelection(range.index + 2 + captionText.length + 1);
+                                        } else {
+                                            quill.setSelection(range.index + 1);
+                                        }
+                                    }
+                                }
+                            } catch (error) {
+                                console.error("Error uploading image:", error);
+                                alert("Erro ao fazer upload da imagem.");
+                            }
+                        }
+                    };
+                }
+            }
+        }
     };
 
     return (
@@ -166,6 +231,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                                     value={formData.content}
                                     onChange={handleContentChange}
                                     modules={quillModules}
+                                    ref={quillRef}
                                     className="bg-white rounded-xl overflow-hidden min-h-[400px]"
                                     placeholder="Escreva sua notícia aqui..."
                                 />
@@ -224,6 +290,19 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                             />
                         </div>
 
+                        <div className="space-y-2">
+                            <label htmlFor="imageDescription" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Crédito / Descrição da Foto</label>
+                            <input
+                                id="imageDescription"
+                                type="text"
+                                name="imageDescription"
+                                value={formData.imageDescription || ''}
+                                onChange={handleChange}
+                                placeholder="FOTO: DIVULGAÇÃO / REDAÇÃO"
+                                className="w-full p-3 bg-gray-50 rounded-lg font-bold border-none focus:ring-2 focus:ring-primary/20 outline-none uppercase"
+                            />
+                        </div>
+
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label htmlFor="category" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Categoria</label>
@@ -252,6 +331,24 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                                     className="w-full p-3 bg-gray-50 rounded-lg font-bold border-none focus:ring-2 focus:ring-primary/20 outline-none uppercase"
                                 />
                             </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 p-4 bg-red-50 rounded-xl border border-red-100">
+                            <input
+                                type="checkbox"
+                                id="isUrgent"
+                                name="isUrgent"
+                                checked={formData.isUrgent || false}
+                                onChange={(e) => setFormData(prev => ({ ...prev, isUrgent: e.target.checked }))}
+                                className="w-5 h-5 text-red-600 rounded focus:ring-red-500 border-gray-300 cursor-pointer"
+                            />
+                            <label htmlFor="isUrgent" className="text-sm font-bold text-red-800 cursor-pointer select-none flex items-center gap-2">
+                                <span className="relative flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                </span>
+                                MANCHETE URGENTE (Topo do Site)
+                            </label>
                         </div>
 
                         <div className="space-y-2">
@@ -283,8 +380,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                     </div>
                 </div>
             </div>
-        </div>
-    );
+            );
 };
 
-export default NewsForm;
+            export default NewsForm;

@@ -35,7 +35,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ item }) => {
   // pois o iframe do Instagram já serve como thumbnail/preview.
   // Para YouTube, preferimos a imagem estática leve primeiro.
   const showIframeImmediately = isInstagram && !item.image;
-  const shouldRenderIframe = isPlaying || showIframeImmediately;
+// (unused variable removed)
 
   const handlePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -135,6 +135,8 @@ const VideoCard: React.FC<VideoCardProps> = ({ item }) => {
           >
             {/* Close Button */}
             <button
+              aria-label="Close video"
+              title="Close video"
               onClick={handleClose}
               className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full transition-colors"
             >

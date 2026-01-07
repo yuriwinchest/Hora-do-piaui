@@ -11,6 +11,7 @@ export interface NewsItem {
   category?: string;
   section?: string;
   isLarge?: boolean;
+  isUrgent?: boolean;
   status?: NewsStatus;
   authorName?: string;
   authorAvatar?: string;
@@ -18,6 +19,8 @@ export interface NewsItem {
   authorRole?: string;
   videoUrl?: string; // YouTube URL
   instagramUrl?: string;
+  imageDescription?: string;
+  slug?: string;
 }
 
 export interface VideoItem {
@@ -45,4 +48,30 @@ export interface HomeLayoutConfig {
   heroSideIds: string[]; // [side1, side SIDE2, side3]
   marianoMainId: string;
   marianoListIds: string[]; // [card1, card2, card3, card4]
+}
+
+export interface BannerConfig {
+  id?: string;
+  title: string;
+  video_url: string;
+  alignment: 'left' | 'right' | 'center';
+  is_active: boolean;
+  position?: string;
+}
+
+export interface AdvertisingBanner {
+  id: string;
+  image_url: string;
+  link_url?: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+declare global {
+  namespace JSX {
+    interface HTMLAttributes<T> {
+      tw?: string;
+    }
+  }
 }

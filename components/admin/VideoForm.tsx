@@ -9,6 +9,24 @@ interface VideoFormProps {
     existingItem?: VideoItem;
 }
 
+const getEmbedUrl = (url: string) => {
+    if (!url) return '';
+
+    if (url.includes('instagram.com')) {
+        const cleanUrl = url.split('?')[0].replace(/\/$/, '');
+        return `${cleanUrl}/embed`;
+    }
+
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+        if (match && match[1]) {
+            return `https://www.youtube.com/embed/${match[1]}`;
+        }
+    }
+
+    return url;
+};
+
 const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -90,7 +108,17 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
             return;
         }
 
-        if (!formData.image && !isInstagram) {
+        let finalImage = formData.image;
+
+        // Try to auto-extract YouTube thumbnail if image is missing but URL is present
+        if (!finalImage && formData.url) {
+            const ytMatch = formData.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            if (ytMatch) {
+                finalImage = `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+            }
+        }
+
+        if (!finalImage && !isInstagram) {
             alert('Por favor, adicione uma imagem de capa ou use um link do YouTube para gerar automaticamente.');
             setLoading(false);
             return;
@@ -98,10 +126,10 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
 
         try {
             await onSave({
-                id: existingItem?.id || crypto.randomUUID(),
+                id: existingItem?.id || '',
                 title: formData.title || '',
-                image: formData.image || 'https://placehold.co/600x400?text=Video', // Safe fallback
-                thumbnail: formData.image,
+                image: finalImage || 'https://placehold.co/600x400?text=Video', // Safe fallback
+                thumbnail: finalImage,
                 url: formData.url || '',
                 duration: formData.duration || '',
                 tag: formData.tag || '',
@@ -177,6 +205,19 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
                         <p className="text-xs text-gray-400 font-medium">
                             Para YouTube, a capa será gerada automaticamente. Para Instagram, cole o link do post.
                         </p>
+                        {formData.url && (
+                            <div className="mt-4">
+                                <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Prévia do Vídeo</label>
+                                <div className="aspect-video rounded-xl overflow-hidden bg-black border border-gray-200 shadow-sm relative z-0">
+                                    <iframe
+                                        src={getEmbedUrl(formData.url)}
+                                        className="w-full h-full"
+                                        allowFullScreen
+                                        title="Video Preview"
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Image URL with Upload */}
@@ -212,6 +253,7 @@ const VideoForm: React.FC<VideoFormProps> = ({ onSave, existingItem }) => {
                             className="hidden"
                             accept="image/*"
                             onChange={handleImageUpload}
+                            title="Upload de imagem de capa"
                         />
 
                         <input

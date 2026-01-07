@@ -67,25 +67,24 @@ const Header: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-4 md:mb-0">
-          <div className="w-full flex items-center justify-center md:w-auto md:justify-start">
-            <Link to="/" className="group hover:opacity-90 transition-opacity">
-              <img src="/assets/logo.png" alt="Hora Piauí" className="h-16 md:h-20 w-auto object-contain" />
-            </Link>
-          </div>
-
-          <nav className="hidden md:flex flex-wrap justify-center gap-8 text-lg font-black text-black md:mb-1">
-            {HEADER_NAV.map((item) => (
-              <NavLink
-                key={item.label}
-                to={item.href}
-                className="hover:text-primary transition-colors text-black"
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+        <div className="w-full flex items-center justify-center md:w-auto md:justify-start mb-4 md:mb-0">
+          <Link to="/" className="group hover:opacity-90 transition-opacity">
+            <img src="/assets/logo.png" alt="Hora Piauí" className="h-12 md:h-16 w-auto object-contain" />
+          </Link>
         </div>
+
+        <nav className="hidden md:flex flex-1 justify-center items-center gap-8 text-lg font-black text-black px-4">
+          {HEADER_NAV.map((item) => (
+            <NavLink
+              key={item.label}
+              to={item.href}
+              className="hover:text-primary transition-colors text-black"
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
         <div className="text-xs text-gray-500 font-sans">
           Terça-feira, 24 de Outubro
         </div>

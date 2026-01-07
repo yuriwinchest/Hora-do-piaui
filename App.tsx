@@ -14,6 +14,8 @@ import AdminVideosPage from './pages/admin/AdminVideosPage';
 import AdminVideoEditor from './pages/admin/AdminVideoEditor';
 import AdminLayoutPage from './pages/admin/AdminLayoutPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
+import AdminBannerPage from './pages/admin/AdminBannerPage';
+import AdminAdsPage from './pages/admin/AdminAdsPage';
 import AdminLayout from './components/admin/AdminLayout';
 import LoginPage from './pages/admin/LoginPage';
 import { useNews } from './hooks/useNews';
@@ -34,6 +36,7 @@ function App() {
     allNews,
     videos,
     homeConfig,
+    bannerConfig,
     loading,
     fetchError,
     saveNews,
@@ -74,6 +77,7 @@ function App() {
             <HomePage
               items={allNews}
               config={homeConfig}
+              bannerConfig={bannerConfig}
             />
             <Footer />
           </>
@@ -186,6 +190,18 @@ function App() {
               onUpdate={updateHomeConfig}
               onSaveNews={saveNews}
             />
+          </AdminLayout>
+        } />
+
+        <Route path="/admin/banner" element={
+          <AdminLayout>
+            <AdminBannerPage />
+          </AdminLayout>
+        } />
+
+        <Route path="/admin/publicidade" element={
+          <AdminLayout>
+            <AdminAdsPage />
           </AdminLayout>
         } />
 

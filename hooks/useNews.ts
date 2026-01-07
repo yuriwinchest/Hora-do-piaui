@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { NewsItem, HomeLayoutConfig, VideoItem } from '../types';
-import { TOP_NEWS, SIDE_NEWS, MIDDLE_FEATURE, MIDDLE_LIST, VIDEOS } from '../constants';
+import { NewsItem, HomeLayoutConfig, VideoItem, BannerConfig } from '../types';
 import { mapNewsFromDb } from '../utils/mappers';
 
 export const useNews = () => {
@@ -9,12 +8,13 @@ export const useNews = () => {
     const [videos, setVideos] = useState<VideoItem[]>([]);
     const [homeConfig, setHomeConfig] = useState<HomeLayoutConfig>({
         mainHeadline: 'Bem-vindo ao Hora do Piauí',
-        heroMainId: 'f47ac10b-58cc-4372-a567-0e02b2c3d475',
-        heroTopIds: ['f47ac10b-58cc-4372-a567-0e02b2c3d471', 'f47ac10b-58cc-4372-a567-0e02b2c3d472'],
-        heroSideIds: ['f47ac10b-58cc-4372-a567-0e02b2c3d473', 'f47ac10b-58cc-4372-a567-0e02b2c3d474'],
-        marianoMainId: 'f47ac10b-58cc-4372-a567-0e02b2c3d476',
-        marianoListIds: ['f47ac10b-58cc-4372-a567-0e02b2c3d477', 'f47ac10b-58cc-4372-a567-0e02b2c3d478', 'f47ac10b-58cc-4372-a567-0e02b2c3d479']
+        heroMainId: '',
+        heroTopIds: [],
+        heroSideIds: [],
+        marianoMainId: '',
+        marianoListIds: []
     });
+    const [bannerConfig, setBannerConfig] = useState<BannerConfig | null>(null);
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -31,61 +31,12 @@ export const useNews = () => {
 
             if (newsError) {
                 console.error('Error fetching news:', newsError);
-                // Continue to try restoration
-            }
-
-            // Robust Content Restoration
-            const initialItems = [...TOP_NEWS, ...SIDE_NEWS, MIDDLE_FEATURE, ...MIDDLE_LIST];
-            const existingIds = new Set((newsData || []).map((n: any) => n.id));
-            const missingItems = initialItems.filter(item => !existingIds.has(item.id));
-
-            if (missingItems.length > 0) {
-                console.log(`Restoring ${missingItems.length} missing default items...`);
-                const { error: seedError } = await supabase.from('horapiaui_news').upsert(
-                    missingItems.map(n => ({
-                        id: n.id,
-                        title: n.title,
-                        image: n.image,
-                        description: n.description,
-                        content: n.content,
-                        category: n.category,
-                        section: n.section,
-                        date: n.date,
-                        time: n.time,
-                        is_large: n.isLarge,
-                        status: 'published'
-                    }))
-                );
-
-                if (seedError) {
-                    console.error('Error restoring items:', seedError);
-                } else {
-                    const { data: refreshed } = await supabase.from('horapiaui_news').select('*').order('created_at', { ascending: false });
-                    if (refreshed) newsData = refreshed;
-                }
             }
 
             setAllNews((newsData || []).map(mapNewsFromDb));
 
             // 2. Videos
             let { data: videosData } = await supabase.from('horapiaui_videos').select('*').order('created_at', { ascending: false });
-            const existingVideoIds = new Set((videosData || []).map((v: any) => v.id));
-            const missingVideos = VIDEOS.filter(v => !existingVideoIds.has(v.id));
-
-            if (missingVideos.length > 0) {
-                await supabase.from('horapiaui_videos').upsert(
-                    missingVideos.map(v => ({
-                        id: v.id,
-                        title: v.title,
-                        image: v.image,
-                        thumbnail: v.image,
-                        url: v.url || '',
-                        duration: v.duration || '0:00',
-                        tag: v.tag || '',
-                        tag_color: v.tagColor || 'bg-black'
-                    }))
-                );
-            }
 
             // Set videos state
             setVideos(videosData?.map((v: any) => ({
@@ -104,12 +55,18 @@ export const useNews = () => {
 
             setHomeConfig({
                 mainHeadline: configData?.main_headline || 'Bem-vindo ao Hora do Piauí',
-                heroMainId: configData?.hero_main_id || 'f47ac10b-58cc-4372-a567-0e02b2c3d475',
-                heroTopIds: (configData?.hero_top_ids?.length) ? configData.hero_top_ids : ['f47ac10b-58cc-4372-a567-0e02b2c3d471', 'f47ac10b-58cc-4372-a567-0e02b2c3d472'],
-                heroSideIds: (configData?.hero_side_ids?.length) ? configData.hero_side_ids : ['f47ac10b-58cc-4372-a567-0e02b2c3d473', 'f47ac10b-58cc-4372-a567-0e02b2c3d474'],
-                marianoMainId: configData?.mariano_main_id || 'f47ac10b-58cc-4372-a567-0e02b2c3d476',
-                marianoListIds: (configData?.mariano_list_ids?.length) ? configData.mariano_list_ids : ['f47ac10b-58cc-4372-a567-0e02b2c3d477', 'f47ac10b-58cc-4372-a567-0e02b2c3d478', 'f47ac10b-58cc-4372-a567-0e02b2c3d479']
+                heroMainId: configData?.hero_main_id || '',
+                heroTopIds: (configData?.hero_top_ids?.length) ? configData.hero_top_ids : [],
+                heroSideIds: (configData?.hero_side_ids?.length) ? configData.hero_side_ids : [],
+                marianoMainId: configData?.mariano_main_id || '',
+                marianoListIds: (configData?.mariano_list_ids?.length) ? configData.mariano_list_ids : []
             });
+
+            // 4. Banner Config
+            const { data: bannerData } = await supabase.from('horapiaui_banners').select('*').single();
+            if (bannerData) {
+                setBannerConfig(bannerData);
+            }
 
         } catch (err: any) {
             console.error('Initialization error:', err);
@@ -134,13 +91,16 @@ export const useNews = () => {
             date: item.date,
             time: item.time,
             is_large: item.isLarge,
+            is_urgent: item.isUrgent,
             status: item.status,
             updated_at: new Date().toISOString(),
             author_name: item.authorName,
             author_avatar: item.authorAvatar,
             author_bio: item.authorBio,
             author_role: item.authorRole,
-            instagram_url: item.instagramUrl
+            instagram_url: item.instagramUrl,
+            image_description: item.imageDescription,
+            slug: item.slug
         };
 
         let query;
@@ -219,11 +179,11 @@ export const useNews = () => {
             .upsert({
                 id: 1,
                 main_headline: newConfig.mainHeadline,
-                hero_main_id: newConfig.heroMainId,
-                hero_top_ids: newConfig.heroTopIds,
-                hero_side_ids: newConfig.heroSideIds,
-                mariano_main_id: newConfig.marianoMainId,
-                mariano_list_ids: newConfig.marianoListIds
+                hero_main_id: newConfig.heroMainId || null,
+                hero_top_ids: newConfig.heroTopIds?.filter(id => id && id.trim() !== '') || [],
+                hero_side_ids: newConfig.heroSideIds?.filter(id => id && id.trim() !== '') || [],
+                mariano_main_id: newConfig.marianoMainId || null,
+                mariano_list_ids: newConfig.marianoListIds?.filter(id => id && id.trim() !== '') || []
             });
 
         if (error) {
@@ -299,6 +259,7 @@ export const useNews = () => {
         videos,
         publishedNews,
         homeConfig,
+        bannerConfig,
         loading,
         fetchError,
         saveNews,

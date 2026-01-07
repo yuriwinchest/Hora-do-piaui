@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/noticia/(.*)",
+      "destination": "/api/news-og?slug=$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
