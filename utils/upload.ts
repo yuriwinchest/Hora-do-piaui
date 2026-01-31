@@ -1,37 +1,49 @@
-
 import { supabase } from '../lib/supabase';
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 export const uploadImage = async (file: File): Promise<string | null> => {
     try {
-        // 1. Get signed URL and token from our API (bypassing RLS)
-        const response = await fetch('/api/sign-upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                fileName: file.name,
-                fileType: file.type
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`API error: ${response.statusText}`);
+        // Validate file type
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            throw new Error(`Tipo de arquivo inválido. Use: JPEG, PNG, GIF ou WebP.`);
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            throw new Error('Arquivo muito grande. Máximo: 5MB.');
         }
 
-        const { path, token, publicUrl } = await response.json();
+        const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = fileName;
 
-        // 2. Upload to Supabase using the signed token
+        const { data: session } = await supabase.auth.getSession();
+        if (!session?.session) {
+            console.error('Usuário não autenticado para upload.');
+            return null;
+        }
+
         const { error: uploadError } = await supabase.storage
             .from('images')
-            .uploadToSignedUrl(path, token, file);
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
 
         if (uploadError) {
-            console.error('Error uploading image:', uploadError);
+            if (uploadError.message?.includes('Not Allowed') || uploadError.message?.includes('new row violates')) {
+                console.error('Storage RLS bloqueou. Execute a migration em supabase/migrations/20250131_increment_news_views_and_storage.sql');
+            }
             throw uploadError;
         }
 
-        return publicUrl;
-    } catch (error) {
-        console.error('Upload failed:', error);
-        return null; // Handle error appropriately in UI
+        const { data } = supabase.storage
+            .from('images')
+            .getPublicUrl(filePath);
+
+        return data.publicUrl;
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : 'Erro ao enviar imagem.';
+        console.error('Upload failed:', msg);
+        return null;
     }
 };

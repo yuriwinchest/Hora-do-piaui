@@ -4,6 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Plus, X, Check, LayoutGrid, CheckCircle2 } from 'lucide-react';
 import AdminNewsList from '../../components/admin/AdminNewsList';
 import { NewsItem, HomeLayoutConfig } from '../../types';
+import { normalizeText } from '../../utils/mappers';
 
 interface AdminNewsPageProps {
     items: NewsItem[];
@@ -22,7 +23,7 @@ const AdminNewsPage: React.FC<AdminNewsPageProps> = ({ items, onDelete, onPublis
     // Filter items based on category
     const filteredItems = currentCategory === 'all'
         ? items
-        : items.filter(item => item.category === currentCategory);
+        : items.filter(item => normalizeText(item.category || '') === normalizeText(currentCategory));
 
     const categories = [
         { id: 'all', label: 'Todas' },

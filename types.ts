@@ -21,6 +21,7 @@ export interface NewsItem {
   instagramUrl?: string;
   imageDescription?: string;
   slug?: string;
+  views?: number;
 }
 
 export interface VideoItem {

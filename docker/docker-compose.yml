@@ -1,0 +1,23 @@
+# PostgreSQL para armazenar backups do banco Supabase
+# Imagem oficial Docker Hub: postgres:16-alpine
+# Os dumps são salvos em ./backups/
+
+services:
+  postgres-backup:
+    image: postgres:16-alpine
+    container_name: horapiaui-postgres-backup
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${LOCAL_PG_USER:-backup}
+      POSTGRES_PASSWORD: ${LOCAL_PG_PASSWORD}
+      POSTGRES_DB: horapiaui_backup
+    volumes:
+      - ./backups:/backups
+      - ./init:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"   # 5433 local para não conflitar com outro postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U backup -d horapiaui_backup"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

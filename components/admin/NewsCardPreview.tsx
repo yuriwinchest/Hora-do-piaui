@@ -11,7 +11,7 @@ const NewsCardPreview: React.FC<NewsCardPreviewProps> = ({ item }) => {
     const previewItem: NewsItem = {
         id: item.id || 'preview',
         title: item.title || 'Título da Notícia',
-        image: item.image || 'https://images.unsplash.com/photo-1504711432869-d635738bb448?q=80&w=1000&auto=format&fit=crop',
+        image: item.image || '/assets/logo.png',
         description: item.description || 'Breve descrição da notícia...',
         date: item.date || '01/01/2026',
         time: item.time || '00:00',

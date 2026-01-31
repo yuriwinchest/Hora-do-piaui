@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Clock, BarChart } from 'lucide-react';
 import { NewsItem } from '../types';
+import { normalizeText } from '../utils/mappers';
 import { calculateReadingTime } from '../utils/seo';
 
 interface TabbedNewsSectionProps {
@@ -24,9 +25,11 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
         fiveDaysAgo.setDate(now.getDate() - 5);
 
         // 1. Filter: Politics category + Last 5 days (relaxed to just Politics for demo if dates are strings)
-        let filtered = items.filter(i =>
-            (i.category?.toLowerCase() === 'política' || i.section?.toLowerCase() === 'política')
-        );
+        let filtered = items.filter(i => {
+            const cat = normalizeText(i.category || '');
+            const sec = normalizeText(i.section || '');
+            return cat === 'politica' || sec === 'politica';
+        });
 
         // 2. Scoring Algorithm
         // Relevance (60%) - Assumed by being in the category
@@ -42,7 +45,7 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
 
     // General Items (Fallback logic)
     const generalItems = useMemo(() => {
-        return items.filter(i => i.category?.toLowerCase() === 'geral').slice(0, 5);
+        return items.filter(i => normalizeText(i.category || '') === 'geral').slice(0, 5);
     }, [items]);
 
     // Data Resolution based on Tab
@@ -104,6 +107,8 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
                                             src={mainItem.image}
                                             alt={mainItem.title}
                                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                                            referrerPolicy="no-referrer"
+                                            loading="eager"
                                         />
                                     </div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90" />
@@ -159,6 +164,8 @@ const TabbedNewsSection: React.FC<TabbedNewsSectionProps> = ({ items, marianoCon
                                             src={item.image}
                                             alt=""
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            referrerPolicy="no-referrer"
+                                            loading="lazy"
                                         />
                                         <div className="absolute top-1 left-1 bg-black/50 backdrop-blur-sm text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase">
                                             {idx + 1}

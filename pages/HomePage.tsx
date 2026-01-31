@@ -38,20 +38,38 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
 
     useEffect(() => {
         const fetchVideos = async () => {
-            // Videos
-            const { data: videos } = await supabase.from('horapiaui_videos').select('*').order('created_at', { ascending: false }).limit(5);
-            if (videos) {
-                setLatestVideos(videos);
-                setSelectedVideo(videos[0]);
-            }
+            try {
+                // Videos
+                const { data: videos, error: videosError } = await supabase
+                    .from('horapiaui_videos')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+                
+                if (videosError) {
+                    console.warn('Erro ao carregar vídeos:', videosError.message);
+                } else if (videos) {
+                    setLatestVideos(videos);
+                    setSelectedVideo(videos[0]);
+                }
 
-            // Banners
-            const { data: banners } = await supabase.from('horapiaui_banners').select('*');
-            if (banners) {
-                const main = banners.find((b: any) => b.position === 'home_main' || !b.position);
-                const secondary = banners.find((b: any) => b.position === 'home_secondary');
-                setMainBannerConfig(main || null);
-                setSecondaryBannerConfig(secondary || null);
+                // Banners - .limit(1) evita 406 em tabela vazia
+                const { data: banners, error: bannersError } = await supabase
+                    .from('horapiaui_banners')
+                    .select('*')
+                    .eq('is_active', true)
+                    .limit(10);
+                
+                if (bannersError) {
+                    console.warn('Erro ao carregar banners:', bannersError.message);
+                } else if (banners && banners.length > 0) {
+                    const main = banners.find((b: any) => b.position === 'home_main' || !b.position);
+                    const secondary = banners.find((b: any) => b.position === 'home_secondary');
+                    setMainBannerConfig(main || null);
+                    setSecondaryBannerConfig(secondary || null);
+                }
+            } catch (err) {
+                console.error('Erro inesperado ao carregar dados:', err);
             }
         };
         fetchVideos();
@@ -162,7 +180,7 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
                             {news.image ? (
                                 <>
                                     <div className="overflow-hidden rounded mb-2">
-                                        <img src={news.image} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
+                                        <img src={news.image} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" alt="" referrerPolicy="no-referrer" loading="lazy" />
                                     </div>
                                     <h2 className="text-lg text-black font-black font-serif leading-tight group-hover:text-[#16a34a] transition-colors">{news.title}</h2>
                                 </>

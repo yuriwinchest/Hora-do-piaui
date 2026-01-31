@@ -5,11 +5,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hora do Piauí</title>
+  
+  <!-- Preload crítico para evitar FOUC -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://mkfkiefwltdepgheynco.supabase.co">
+  
+  <!-- Fontes com display=swap para renderização rápida -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,400&display=optional"
     rel="stylesheet">
+  
+  <!-- Estilo crítico inline - evita FOUC e layout forçado antes do CSS -->
+  <style>
+    html, body { margin: 0; padding: 0; }
+    body { background-color: #fff; color: #1a1a1a; font-family: system-ui, -apple-system, 'Segoe UI', 'Inter', sans-serif; }
+    #root { min-height: 100vh; }
+    .min-h-screen, [class*="min-h-screen"] { min-height: 100vh; }
+    .flex { display: flex; }
+    .justify-center { justify-content: center; }
+    .items-center { align-items: center; }
+    .animate-spin, [class*="animate-spin"] { animation: hp-spin 1s linear infinite; }
+    .rounded-full { border-radius: 9999px; }
+    @keyframes hp-spin { to { transform: rotate(360deg); } }
+  </style>
+  <script>
+    window.addEventListener('error',function(e){if(e.message&&(e.message.indexOf('cookie')!==-1||e.message.indexOf('__cf_bm')!==-1||e.message.indexOf('domain')!==-1)){e.preventDefault();e.stopPropagation();return true;}},true);
+  </script>
+  
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">

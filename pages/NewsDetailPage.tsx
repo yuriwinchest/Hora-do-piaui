@@ -4,6 +4,7 @@ import { ChevronLeft, Share2, Facebook, Search, Instagram } from 'lucide-react';
 import { NewsItem } from '../types';
 import { PageContainer } from '../components/common/PageContainer';
 import { SEO } from '../components/common/SEO';
+import { supabase } from '../lib/supabase';
 
 interface NewsDetailPageProps {
     items: NewsItem[];
@@ -15,6 +16,21 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
 
     // Find news based on title match (slug) or ID
     const news = items.find(n => n.slug === slug || n.id === slug);
+
+    // Increment view count (silently ignore if RPC not available)
+    React.useEffect(() => {
+        if (news?.id) {
+            const incrementView = async () => {
+                try {
+                    const { error } = await supabase.rpc('increment_news_views', { news_id: news.id });
+                    if (error) console.warn('Views tracking skipped:', error.message);
+                } catch {
+                    // RPC may not exist; ignore
+                }
+            };
+            incrementView();
+        }
+    }, [news?.id]);
 
     if (!news) {
         return (
@@ -30,13 +46,24 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
         .filter(n => n.category === news.category && n.id !== news.id)
         .slice(0, 4);
 
+
+    // Construct canonical URL using slug if available
+    const canonicalUrl = `${window.location.origin}/noticia/${news.slug || news.id}`;
+
+    // Update browser URL to canonical one if strictly needed (SEO)
+    React.useEffect(() => {
+        if (news.slug && slug !== news.slug) {
+            window.history.replaceState(null, '', `/noticia/${news.slug}`);
+        }
+    }, [news.slug, slug]);
+
     const handleShare = async () => {
         if (navigator.share) {
             try {
                 await navigator.share({
                     title: news.title,
                     text: news.description || news.title,
-                    url: window.location.href,
+                    url: canonicalUrl,
                 });
             } catch (error) {
                 console.log('Error sharing:', error);
@@ -44,7 +71,7 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
         } else {
             // Fallback for desktop: Copy to clipboard
             try {
-                await navigator.clipboard.writeText(window.location.href);
+                await navigator.clipboard.writeText(canonicalUrl);
                 alert('Link copiado para a área de transferência!');
             } catch (err) {
                 console.error('Failed to copy:', err);
@@ -52,7 +79,7 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
         }
     };
 
-    const shareUrl = encodeURIComponent(window.location.href);
+    const shareUrl = encodeURIComponent(canonicalUrl);
     const shareTitle = encodeURIComponent(news.title);
 
     return (
@@ -148,6 +175,8 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                                 src={news.authorAvatar || "/assets/logo.png"}
                                 alt={news.authorName || "Redação Hora do Piauí"}
                                 className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                                loading="lazy"
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=HP&background=random';
                                 }}
@@ -177,6 +206,8 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                         src={news.image}
                         alt={news.title}
                         className="w-full h-auto object-cover max-h-[700px] transition-transform duration-700 group-hover:scale-[1.01]"
+                        referrerPolicy="no-referrer"
+                        loading="eager"
                     />
                     {/* Image Caption */}
                     <div className="bg-gradient-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0 p-6 pt-12">
@@ -218,6 +249,8 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                                         src={item.image}
                                         alt={item.title}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        referrerPolicy="no-referrer"
+                                        loading="lazy"
                                     />
                                 </div>
                                 <div className="space-y-1">

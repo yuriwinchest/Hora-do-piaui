@@ -94,7 +94,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
 
     const quillRef = React.useRef<ReactQuill>(null);
 
-    const quillModules = {
+    const quillModules = React.useMemo(() => ({
         toolbar: {
             container: [
                 [{ 'header': [1, 2, 3, false] }],
@@ -164,7 +164,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                 }
             }
         }
-    };
+    }), []); // Dependencies array empty as we don't depend on props/state here (uploadImage is imported)
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -380,7 +380,8 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                     </div>
                 </div>
             </div>
-            );
+        </div>
+    );
 };
 
-            export default NewsForm;
+export default NewsForm;

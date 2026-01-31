@@ -21,6 +21,7 @@ export const mapNewsFromDb = (n: any): NewsItem => ({
     instagramUrl: n.instagram_url,
     imageDescription: n.image_description,
     slug: n.slug,
+    views: n.views || 0,
 });
 
 export const normalizeText = (value: string) =>

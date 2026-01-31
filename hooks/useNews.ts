@@ -50,23 +50,33 @@ export const useNews = () => {
                 tagColor: v.tag_color
             })) || []);
 
-            // 3. Config
-            const { data: configData } = await supabase.from('horapiaui_home_layout').select('*').eq('id', 1).single();
+            // 3. Config - tratando caso não exista
+            const { data: configData, error: configError } = await supabase
+                .from('horapiaui_home_layout')
+                .select('*')
+                .eq('id', 1)
+                .maybeSingle();
 
-            setHomeConfig({
-                mainHeadline: configData?.main_headline || 'Bem-vindo ao Hora do Piauí',
-                heroMainId: configData?.hero_main_id || '',
-                heroTopIds: (configData?.hero_top_ids?.length) ? configData.hero_top_ids : [],
-                heroSideIds: (configData?.hero_side_ids?.length) ? configData.hero_side_ids : [],
-                marianoMainId: configData?.mariano_main_id || '',
-                marianoListIds: (configData?.mariano_list_ids?.length) ? configData.mariano_list_ids : []
-            });
-
-            // 4. Banner Config
-            const { data: bannerData } = await supabase.from('horapiaui_banners').select('*').single();
-            if (bannerData) {
-                setBannerConfig(bannerData);
+            if (!configError && configData) {
+                setHomeConfig({
+                    mainHeadline: configData.main_headline || 'Bem-vindo ao Hora do Piauí',
+                    heroMainId: configData.hero_main_id || '',
+                    heroTopIds: (configData.hero_top_ids?.length) ? configData.hero_top_ids : [],
+                    heroSideIds: (configData.hero_side_ids?.length) ? configData.hero_side_ids : [],
+                    marianoMainId: configData.mariano_main_id || '',
+                    marianoListIds: (configData.mariano_list_ids?.length) ? configData.mariano_list_ids : []
+                });
             }
+
+            // 4. Banner Config - ignora 406 se tabela vazia ou RLS
+            try {
+                const { data: bannerData, error: bannerError } = await supabase
+                    .from('horapiaui_banners')
+                    .select('*')
+                    .eq('is_active', true)
+                    .limit(1);
+                if (!bannerError && bannerData?.[0]) setBannerConfig(bannerData[0]);
+            } catch (_) { /* 406 ou RLS - ignora */ }
 
         } catch (err: any) {
             console.error('Initialization error:', err);
@@ -81,6 +91,14 @@ export const useNews = () => {
     }, []);
 
     const saveNews = async (item: NewsItem) => {
+        // Manchete urgente: ao marcar uma, desmarca as demais automaticamente
+        if (item.isUrgent) {
+            const unmarkQuery = item.id && item.id.length > 20
+                ? supabase.from('horapiaui_news').update({ is_urgent: false }).neq('id', item.id)
+                : supabase.from('horapiaui_news').update({ is_urgent: false });
+            await unmarkQuery;
+        }
+
         const dbItem = {
             title: item.title,
             image: item.image,
@@ -137,12 +155,13 @@ export const useNews = () => {
         const savedItem = mapNewsFromDb(data);
         setAllNews(prev => {
             const index = prev.findIndex(n => n.id === savedItem.id);
-            if (index >= 0) {
-                const updated = [...prev];
-                updated[index] = savedItem;
-                return updated;
+            let updated = index >= 0 ? [...prev] : [savedItem, ...prev];
+            if (index >= 0) updated[index] = savedItem;
+            // Se marcou como manchete urgente, garante que só ela tem isUrgent no state
+            if (savedItem.isUrgent) {
+                updated = updated.map(n => n.id === savedItem.id ? n : { ...n, isUrgent: false });
             }
-            return [savedItem, ...prev];
+            return updated;
         });
     };
 

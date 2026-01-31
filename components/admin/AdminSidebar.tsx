@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, FileText, Settings, LogOut, PlusCircle, Video, LayoutGrid, User, Tv, Megaphone, X } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, PlusCircle, Video, LayoutGrid, User, Tv, Megaphone, X, BarChart3 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
@@ -18,6 +18,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
 
     const navItems = [
         { label: 'Painel', href: '/admin', icon: LayoutDashboard },
+        { label: 'Monitoramento', href: '/admin/monitoramento', icon: BarChart3 },
         { label: 'Configurar Home', href: '/admin/layout', icon: LayoutGrid },
         { label: 'Banner Dinâmico', href: '/admin/banner', icon: Tv },
         { label: 'Publicidade', href: '/admin/publicidade', icon: Megaphone },
@@ -32,7 +33,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
         <>
             {/* Overlay para mobile */}
             {isOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300"
                     onClick={onClose}
                     aria-hidden="true"
@@ -50,7 +51,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
                         <img src="/assets/logo.png" alt="Logo" className="h-8 w-auto" />
                         <span className="font-black text-gray-800 tracking-tight">ADMIN</span>
                     </div>
-                    <button 
+                    <button
                         onClick={onClose}
                         className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
                         aria-label="Fechar menu"

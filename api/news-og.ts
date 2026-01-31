@@ -225,8 +225,16 @@ function buildDynamicOgImageUrl(title: string, imageUrl?: string) {
 
 export default async function handler(request: Request) {
   const url = new URL(request.url);
-  const slug = url.searchParams.get('slug')?.trim();
-  const canonicalUrl = `${BASE_URL}/noticia/${slug || ''}`;
+  const rawSlug = url.searchParams.get('slug')?.trim();
+  const slug = rawSlug // Keep casing for UUID check initially, though UUIDs are case insensitive mostly.
+
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawSlug || '');
+
+  // If it's NOT a UUID, force lowercase for slug lookup to match DB normalization.
+  // If it IS a UUID, keep it as is (though DB handles it).
+  const lookupValue = isUUID ? rawSlug : rawSlug?.toLowerCase();
+
+  const canonicalUrl = `${BASE_URL}/noticia/${rawSlug || ''}`;
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -236,8 +244,8 @@ export default async function handler(request: Request) {
 
   let chosenImage: string | undefined;
 
-  if (supabaseUrl && supabaseKey && slug) {
-    const news = await fetchNewsById(slug, supabaseUrl, supabaseKey);
+  if (supabaseUrl && supabaseKey && rawSlug && lookupValue) {
+    const news = await fetchNewsById(lookupValue, supabaseUrl, supabaseKey);
     if (news?.title) title = news.title;
     if (news?.description) description = news.description;
 
@@ -266,9 +274,10 @@ export default async function handler(request: Request) {
 
   const selectedForOg = fallbackOrder[0] ?? LOGO_URL;
 
-  // Always use the dynamic generator to create a consistent, optimized card for WhatsApp
-  // This ensures the image is combined with the title and handled by Vercel OG for consistent dimensions (1200x630)
-  const ogImage = buildDynamicOgImageUrl(title, selectedForOg);
+  // Use the raw image directly for max reliability. 
+  // Dynamic generation can be fragile (timeouts, url length).
+  // If no image is found, fall back to Logo.
+  const ogImage = chosenImage || LOGO_URL;
 
   const indexResponse = await fetch(new URL('/index.html', request.url));
   const indexHtml = await indexResponse.text();
@@ -286,14 +295,11 @@ export default async function handler(request: Request) {
   html = upsertMetaProperty(html, 'og:description', description);
   html = upsertMetaProperty(html, 'og:image', ogImage);
   html = upsertMetaProperty(html, 'og:image:secure_url', ogImage);
-  html = upsertMetaProperty(html, 'og:image:type', 'image/jpeg');
   html = upsertMetaProperty(html, 'og:image:alt', title);
 
-  // Re-add dimensions because we are now enforcing width via URL params
-  // Vercel OG generates images at 1200x630
-  html = upsertMetaProperty(html, 'og:image:width', '1200');
-  html = upsertMetaProperty(html, 'og:image:height', '630');
-
+  // Remove fixed dimensions since we are using raw images which vary
+  html = html.replace(/<meta\s+property=["']og:image:width["'][^>]*>/i, '');
+  html = html.replace(/<meta\s+property=["']og:image:height["'][^>]*>/i, '');
 
   html = upsertMetaName(html, 'twitter:card', 'summary_large_image');
   html = upsertMetaName(html, 'twitter:title', title);

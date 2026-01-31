@@ -16,16 +16,27 @@ import AdminLayoutPage from './pages/admin/AdminLayoutPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import AdminBannerPage from './pages/admin/AdminBannerPage';
 import AdminAdsPage from './pages/admin/AdminAdsPage';
+import AdminMonitoringPage from './pages/admin/AdminMonitoringPage';
 import AdminLayout from './components/admin/AdminLayout';
 import LoginPage from './pages/admin/LoginPage';
+import GoogleAnalytics from './components/GoogleAnalytics';
 import { useNews } from './hooks/useNews';
 import { ErrorState } from './components/common/ErrorState';
+
+import { supabase } from './lib/supabase';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    // Track site-wide visit (silently - 404 ok se RPC não existir)
+    void (async () => {
+      try {
+        await supabase.rpc('increment_site_visits');
+      } catch (_) {}
+    })();
   }, [pathname]);
 
   return null;
@@ -68,6 +79,7 @@ function App() {
 
   return (
     <>
+      <GoogleAnalytics />
       <ScrollToTop />
       <Routes>
         {/* Public Routes */}
@@ -202,6 +214,11 @@ function App() {
         <Route path="/admin/publicidade" element={
           <AdminLayout>
             <AdminAdsPage />
+          </AdminLayout>
+        } />
+        <Route path="/admin/monitoramento" element={
+          <AdminLayout>
+            <AdminMonitoringPage items={allNews} />
           </AdminLayout>
         } />
 

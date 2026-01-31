@@ -19,6 +19,8 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
               src={item.image}
               alt={item.title}
               className="w-32 h-24 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
+              referrerPolicy="no-referrer"
+              loading="lazy"
             />
           ) : (
             <div className="w-32 h-24 rounded bg-[#16a34a] flex-shrink-0 shadow-sm flex items-center justify-center p-2 text-center">
@@ -53,6 +55,8 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
                 src={item.image}
                 alt={item.title}
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 filter brightness-105 contrast-105 absolute inset-0"
+                referrerPolicy="no-referrer"
+                loading="lazy"
               />
             </div>
             <h2 className="text-xl text-black font-black font-serif leading-snug group-hover:text-primary transition-colors">

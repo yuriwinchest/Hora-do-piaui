@@ -14,7 +14,7 @@ const NewsFeedPage: React.FC<NewsFeedPageProps> = ({ title, category, items }) =
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredItems = items.filter(item => {
-        const matchesCategory = category ? item.category === category : true;
+        const matchesCategory = category ? normalizeText(item.category || '') === normalizeText(category) : true;
         const matchesSearch =
             normalizeText(item.title).includes(normalizeText(searchTerm)) ||
             normalizeText(item.description || '').includes(normalizeText(searchTerm));
