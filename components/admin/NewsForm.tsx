@@ -9,6 +9,7 @@ import { uploadImage } from '../../utils/upload';
 import { slugify } from '../../utils/slugify';
 
 import { useAuth } from '../../hooks/useAuth';
+import { getCurrentDateBR, getCurrentTimeBR } from '../../utils/dateTime';
 
 interface NewsFormProps {
     onSave: (item: NewsItem) => void;
@@ -74,13 +75,13 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
             ...formData as NewsItem,
             id: existingItem?.id || '',
             slug: existingItem?.slug || slugify(formData.title || ''),
-            date: formData.date || new Date().toLocaleDateString('pt-BR'),
-            time: formData.time || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+            date: formData.date || getCurrentDateBR(),
+            time: formData.time || getCurrentTimeBR(),
             status,
-            authorName: profile?.full_name || formData.authorName,
+            authorName: profile?.full_name || formData.authorName || 'Redação Hora do Piauí',
             authorAvatar: profile?.avatar_url || formData.authorAvatar,
             authorBio: profile?.bio || formData.authorBio,
-            authorRole: profile?.role || formData.authorRole
+            authorRole: profile?.role || formData.authorRole || 'Jornalismo'
         };
 
         try {
@@ -333,6 +334,36 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                             </div>
                         </div>
 
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label htmlFor="date" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Data de Publicação</label>
+                                <input
+                                    id="date"
+                                    type="text"
+                                    name="date"
+                                    value={formData.date || ''}
+                                    onChange={handleChange}
+                                    placeholder="DD/MM/AAAA"
+                                    className="w-full p-3 bg-gray-50 rounded-lg font-bold border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                                />
+                                <p className="text-xs text-gray-400">Formato: DD/MM/AAAA (ex: 02/02/2026)</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="time" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Hora de Publicação</label>
+                                <input
+                                    id="time"
+                                    type="text"
+                                    name="time"
+                                    value={formData.time || ''}
+                                    onChange={handleChange}
+                                    placeholder="HH:MM"
+                                    className="w-full p-3 bg-gray-50 rounded-lg font-bold border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                                />
+                                <p className="text-xs text-gray-400">Formato: HH:MM (ex: 14:30)</p>
+                            </div>
+                        </div>
+
                         <div className="flex items-center gap-3 p-4 bg-red-50 rounded-xl border border-red-100">
                             <input
                                 type="checkbox"
@@ -367,7 +398,63 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                         </div>
                     </div>
 
-                    {/* Author inputs removed - auto-filled from profile */}
+                    {/* Author Section - auto-filled from profile but editable */}
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+                        <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4">Informações do Autor</h3>
+
+                        <div className="space-y-2">
+                            <label htmlFor="authorName" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Nome Completo do Jornalista</label>
+                            <input
+                                id="authorName"
+                                type="text"
+                                name="authorName"
+                                value={formData.authorName || ''}
+                                onChange={handleChange}
+                                placeholder="Ex: João Silva Santos"
+                                className="w-full p-3 bg-gray-50 rounded-lg font-bold border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                            />
+                            <p className="text-xs text-gray-400">Digite o nome completo do jornalista (incluindo sobrenome)</p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="authorRole" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Cargo/Função</label>
+                            <input
+                                id="authorRole"
+                                type="text"
+                                name="authorRole"
+                                value={formData.authorRole || ''}
+                                onChange={handleChange}
+                                placeholder="Ex: Jornalista, Repórter, Editor"
+                                className="w-full p-3 bg-gray-50 rounded-lg font-bold border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="authorBio" className="text-sm font-bold text-gray-500 uppercase tracking-wider">Biografia Curta</label>
+                            <textarea
+                                id="authorBio"
+                                name="authorBio"
+                                value={formData.authorBio || ''}
+                                onChange={handleChange}
+                                rows={3}
+                                placeholder="Uma breve descrição sobre o autor..."
+                                className="w-full p-3 bg-gray-50 rounded-lg border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="authorAvatar" className="text-sm font-bold text-gray-500 uppercase tracking-wider">URL do Avatar</label>
+                            <input
+                                id="authorAvatar"
+                                type="text"
+                                name="authorAvatar"
+                                value={formData.authorAvatar || ''}
+                                onChange={handleChange}
+                                placeholder="https://..."
+                                className="w-full p-3 bg-gray-50 rounded-lg font-bold border-none focus:ring-2 focus:ring-primary/20 outline-none"
+                            />
+                        </div>
+                    </div>
 
                     <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10">
                         <div className="flex items-center gap-3 mb-2 text-primary">
