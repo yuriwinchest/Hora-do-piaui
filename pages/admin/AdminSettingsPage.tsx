@@ -184,6 +184,8 @@ export default function AdminSettingsPage() {
                                             onChange={(e) => setFullName(e.target.value)}
                                             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                             required
+                                            title="Nome Completo"
+                                            placeholder="Seu nome completo"
                                         />
                                     </div>
                                     <div>
@@ -192,6 +194,7 @@ export default function AdminSettingsPage() {
                                             value={role}
                                             onChange={(e) => setRole(e.target.value)}
                                             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                            title="Cargo / Função"
                                         >
                                             {roles.map(r => <option key={r} value={r}>{r}</option>)}
                                         </select>
@@ -247,6 +250,7 @@ export default function AdminSettingsPage() {
                                         onChange={handleAvatarUpload}
                                         className="hidden"
                                         disabled={uploading}
+                                        title="Alterar foto de perfil"
                                     />
                                 </label>
                             </div>
@@ -315,6 +319,7 @@ export default function AdminSettingsPage() {
                                         value={newUserRole}
                                         onChange={(e) => setNewUserRole(e.target.value)}
                                         className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors"
+                                        title="Cargo do novo usuário"
                                     >
                                         {roles.map(r => <option key={r} value={r}>{r}</option>)}
                                     </select>
