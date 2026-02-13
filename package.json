@@ -8,6 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "npm run clean:dist && npm run build && node scripts/vps_deploy_update.js",
+    "vps:traefik:harden": "node scripts/vps_traefik_harden.js",
+    "vps:legacy:check": "node scripts/vps_check_legacy_port.js",
+    "vps:canary:whoami": "node scripts/vps_canary_whoami.js",
     "vps:backup": "node scripts/vps_fix_backup_and_run.js",
     "clean:dist": "node -e \"try{require('fs').rmSync('dist',{recursive:true})}catch(e){}\""
   },
