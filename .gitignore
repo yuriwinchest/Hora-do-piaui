@@ -31,3 +31,9 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Local tooling / VPS artifacts (do not commit)
+.claude/
+vps.env
+*.tgz
+source_dump.sql
