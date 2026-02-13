@@ -24,7 +24,7 @@ Este documento já inclui os ajustes para evitar:
 
 Observacao:
 1. Tentamos ativar Traefik com **docker provider** (labels), mas o servidor retornou erro de versao da API do Docker. Por isso, aqui o padrao oficial e **file provider por diretorio** (sem dependencia do Docker API).
-2. Para manter previsibilidade, o Traefik deve declarar explicitamente:
+2. Para manter previsibilidade (neste servidor/neste padrao), o Traefik deve declarar explicitamente:
    - `--providers.docker=false`
 
 ---

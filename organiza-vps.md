@@ -29,10 +29,10 @@ Confirme:
 
 Checagem rapida (na VPS):
 ```bash
-ss -lntp | grep -E ":<LEGACY_PORT>\\b" || true
+ss -lntp | awk '$4 ~ /:<LEGACY_PORT>$/ {print}'
 ```
 
-Se aparecer `:::<LEGACY_PORT>` voce ainda esta exposto em IPv6.
+Se aparecer `0.0.0.0:<LEGACY_PORT>` (IPv4) ou `:::<LEGACY_PORT>` (IPv6), voce ainda esta exposto externamente.
 
 ---
 
@@ -163,7 +163,7 @@ Neste servidor, o `providers.docker` do Traefik pode falhar (erro de API). Para 
 
 1. Trocar o file provider de `filename` para `directory`.
 2. Criar **1 arquivo por app** em `/opt/traefik/dynamic.d/`.
-3. (Obrigatorio) Deixar claro que o Docker Provider nao faz parte desse padrao.
+3. (Obrigatorio neste servidor/neste padrao) Deixar claro que o Docker Provider nao faz parte desse padrao.
 
 No `/opt/traefik/docker-compose.yml`, documente e force:
 1. `--providers.docker=false`
@@ -267,6 +267,10 @@ docker logs --tail 50 traefik
 
 Validacao:
 1. Acessar `https://canary.fatopago.com` e ver a resposta do whoami.
+
+Observacao (importante):
+1. O hash do BasicAuth deve ser real na execucao (gerado com `htpasswd`).
+2. Se voce estiver versionando arquivos do Traefik em repo publico, evite commitar o hash: mantenha o arquivo somente na VPS, ou use um mecanismo de segredo fora do Git.
 
 Remover piloto:
 ```bash
