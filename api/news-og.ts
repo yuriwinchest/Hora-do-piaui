@@ -6,7 +6,7 @@ export const config = {
 
 type NewsRow = Pick<NewsItem, 'id' | 'title' | 'description' | 'image' | 'content'>;
 
-const BASE_URL = 'https://www.horapiaui.com';
+const BASE_URL = 'https://horapiaui.com';
 const LOGO_URL = `${BASE_URL}/assets/logo.png`;
 const FAVICON_URL = `${BASE_URL}/favicon.png`;
 
@@ -313,4 +313,3 @@ export default async function handler(request: Request) {
     },
   });
 }
-

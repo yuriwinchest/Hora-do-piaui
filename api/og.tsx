@@ -10,7 +10,7 @@ export default function handler(request: Request) {
     const title = searchParams.get('title');
     const image = searchParams.get('image');
 
-    const logoUrl = 'https://www.horapiaui.com/assets/logo.png';
+    const logoUrl = 'https://horapiaui.com/assets/logo.png';
 
     if (!image || image === logoUrl) {
       return new ImageResponse(

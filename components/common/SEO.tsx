@@ -18,7 +18,7 @@ export const SEO: React.FC<SEOProps> = ({ title, description, image, url, type =
     // 1. Provided image (if valid)
     // 2. Default logo
     // Note: URL must be absolute for OG tags to work properly
-    const baseUrl = 'https://www.horapiaui.com';
+    const baseUrl = 'https://horapiaui.com';
     const defaultImage = `${baseUrl}/assets/logo.png`;
 
     // Ensure image is absolute URL
@@ -33,7 +33,7 @@ export const SEO: React.FC<SEOProps> = ({ title, description, image, url, type =
 
 
 
-    const currentUrl = url || window.location.href;
+    const currentUrl = url || window.location.href.replace('https://www.horapiaui.com', baseUrl);
 
     return (
         <Helmet>
