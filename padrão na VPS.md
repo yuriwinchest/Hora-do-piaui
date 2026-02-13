@@ -24,6 +24,8 @@ Este documento já inclui os ajustes para evitar:
 
 Observacao:
 1. Tentamos ativar Traefik com **docker provider** (labels), mas o servidor retornou erro de versao da API do Docker. Por isso, aqui o padrao oficial e **file provider por diretorio** (sem dependencia do Docker API).
+2. Para manter previsibilidade, o Traefik deve declarar explicitamente:
+   - `--providers.docker=false`
 
 ---
 
@@ -140,6 +142,30 @@ Para cada dominio:
 Criar registros para canary:
 1. `canary.fatopago.com`
 2. `canary.fazservico.com.br`
+
+### 5.3 Canary deve ter protecao minima (obrigatorio)
+
+Canary nao deve ficar publico sem protecao. Escolha um:
+1. Basic Auth no Traefik (recomendado).
+2. IP allowlist temporaria (se voce tiver IP fixo).
+
+Motivo:
+1. Evita crawler/SEO indexar.
+2. Reduz superficie de ataque durante teste.
+
+---
+
+## 5.4 Cutover e rollback (file provider)
+
+Metodo correto:
+1. Backup do arquivo do dominio em `/opt/traefik/dynamic.d/`.
+2. Trocar apenas o service/upstream do dominio principal para o container novo.
+3. Validar `docker logs traefik` e `curl -I https://DOMINIO`.
+4. Manter legacy 24-48h.
+
+Rollback:
+1. Restaurar o arquivo `.bak` para o nome original.
+2. Validar logs e testar `curl`.
 
 ---
 

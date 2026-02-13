@@ -25,6 +25,14 @@ Confirme:
 1. SSH esta ok.
 2. Traefik esta nas portas padrao de HTTP/HTTPS.
 3. Nginx host (legado) nao esta acessivel externamente.
+4. (Obrigatorio) A porta do legado nao esta exposta nem em IPv4 nem em IPv6.
+
+Checagem rapida (na VPS):
+```bash
+ss -lntp | grep -E ":<LEGACY_PORT>\\b" || true
+```
+
+Se aparecer `:::<LEGACY_PORT>` voce ainda esta exposto em IPv6.
 
 ---
 
@@ -94,12 +102,25 @@ ls -lah /srv/apps
 
 ### 1.2 Criar network `web` (padrao Traefik)
 
-O Traefik ja usa `networks: web` como external. Garanta que existe:
+O Traefik deve usar `web` como **external**. Garanta que existe e que o Traefik esta com `external: true`:
+
+1. Criar a network explicitamente (idempotente):
 
 ```bash
-docker network ls | grep -E "^web\s" || docker network create web
+docker network inspect web >/dev/null 2>&1 || docker network create --driver bridge web
 docker network inspect web >/dev/null
 ```
+
+2. Confirmar no `/opt/traefik/docker-compose.yml`:
+
+```yml
+networks:
+  web:
+    external: true
+```
+
+Motivo:
+1. Evita o caso classico do Compose criar outra rede (ex.: `traefik_default`) e quebrar o roteamento.
 
 ### 1.3 Regra operacional (anote e siga sempre)
 
@@ -142,6 +163,13 @@ Neste servidor, o `providers.docker` do Traefik pode falhar (erro de API). Para 
 
 1. Trocar o file provider de `filename` para `directory`.
 2. Criar **1 arquivo por app** em `/opt/traefik/dynamic.d/`.
+3. (Obrigatorio) Deixar claro que o Docker Provider nao faz parte desse padrao.
+
+No `/opt/traefik/docker-compose.yml`, documente e force:
+1. `--providers.docker=false`
+
+Motivo:
+1. Evita alguem habilitar docker provider depois e criar rotas duplicadas (file + labels), causando comportamento imprevisivel.
 
 ### 2.1 Estrutura real hoje (referencia)
 
@@ -212,17 +240,25 @@ docker run -d --name app_00_whoami --restart always --network web traefik/whoami
 # Rota canary via file provider
 cat > /opt/traefik/dynamic.d/90-canary.yml <<'YAML'
 http:
+  middlewares:
+    canary-basic-auth:
+      basicAuth:
+        # Gere com: htpasswd -nbB user senha
+        # Coloque o hash aqui (nao use senha em claro)
+        users:
+          - "user:<HASH_BCRYPT>"
   routers:
     canary-whoami:
       rule: "Host(`canary.fatopago.com`)"
       service: canary-whoami
+      middlewares: [canary-basic-auth]
       entryPoints: [websecure]
       tls: { certResolver: myresolver }
   services:
     canary-whoami:
       loadBalancer:
         servers:
-          - url: "http://app_00_whoami"
+          - url: "http://app_00_whoami:80"
 YAML
 
 # File provider esta com watch=true; nao precisa reiniciar.
@@ -245,6 +281,25 @@ rm -f /opt/traefik/dynamic.d/90-canary.yml
 Depois do piloto, a migracao real por dominio segue o mesmo modelo:
 1. Subir `APP-01` ou `APP-02` em paralelo (v2).
 2. Rota canary -> validar.
-3. Cutover do dominio principal.
+3. Cutover do dominio principal (passo a passo abaixo).
 4. Manter legacy por 24-48h como fallback.
 5. Rollback = voltar rota ou trocar tag da imagem.
+
+### Cutover (metodo correto com file provider)
+
+Regra:
+1. Cutover e sempre "trocar o service" no arquivo do dominio principal. Nada de mexer em Nginx do host durante o corte.
+
+Passos (na VPS):
+1. Fazer backup do arquivo atual do dominio:
+   - `cp -a /opt/traefik/dynamic.d/10-fatopago.yml /opt/traefik/dynamic.d/10-fatopago.yml.bak.$(date +%Y%m%d_%H%M%S)`
+2. Editar `10-fatopago.yml` e trocar somente o `services.*.loadBalancer.servers.url` (ou o service alvo) para o novo container (v2).
+3. Validar no Traefik:
+   - `docker logs --tail 200 traefik` (procurar erros de YAML/router)
+4. Testar o dominio:
+   - `curl -I https://fatopago.com`
+5. Manter o legacy rodando (nao remover) por 24-48h.
+
+Rollback (instantaneo):
+1. Restaurar o arquivo `.bak` e salvar de volta com o nome original.
+2. Validar no log do Traefik e testar com `curl -I`.
