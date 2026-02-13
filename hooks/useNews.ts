@@ -21,7 +21,6 @@ export const useNews = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            console.log('Fetching data...');
 
             // 1. Fetch News
             let { data: newsData, error: newsError } = await supabase

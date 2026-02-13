@@ -134,7 +134,7 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
                                 <img
                                     src={urgentNews.image}
                                     alt={urgentNews.title}
-                                    className="w-full aspect-video object-cover md:absolute md:inset-0 md:h-full md:aspect-auto group-hover:scale-105 transition-transform duration-700"
+                                    className="w-full aspect-video object-cover object-[center_25%] md:absolute md:inset-0 md:h-full md:aspect-auto group-hover:scale-105 transition-transform duration-700"
                                 />
                                 <div className="relative bg-white p-6 md:bg-transparent md:absolute md:inset-0 md:bg-gradient-to-t md:from-black/90 md:via-black/40 md:to-transparent md:flex md:flex-col justify-end p-6 md:p-10 lg:p-12">
                                     <h2 className="text-2xl md:text-4xl lg:text-5xl font-black text-black md:text-white font-serif leading-tight group-hover:underline decoration-[#16a34a] underline-offset-8 drop-shadow-none md:drop-shadow-lg">
@@ -180,7 +180,7 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
                             {news.image ? (
                                 <>
                                     <div className="overflow-hidden rounded mb-2">
-                                        <img src={news.image} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" alt="" referrerPolicy="no-referrer" loading="lazy" />
+                                        <img src={news.image} className="w-full aspect-video object-cover object-[center_25%] group-hover:scale-105 transition-transform duration-500" alt="" referrerPolicy="no-referrer" loading="lazy" />
                                     </div>
                                     <h2 className="text-lg text-black font-black font-serif leading-tight group-hover:text-[#16a34a] transition-colors">{news.title}</h2>
                                 </>
@@ -240,7 +240,14 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
                         </h2>
                     </div>
                     <div className="hidden md:block flex-1">
-                        <img src="https://framerusercontent.com/images/3mS7M6T7C5Vp5K8R6s7E7.png" alt="" className="w-full max-w-sm ml-auto" />
+                        {/* The old framerusercontent URL is 404; keep this banner self-hosted */}
+                        <img
+                            src="/assets/image.png"
+                            alt="Hora do Piauí"
+                            className="w-full max-w-sm ml-auto"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                        />
                     </div>
                 </section>
             )}
