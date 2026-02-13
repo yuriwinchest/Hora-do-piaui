@@ -41,12 +41,26 @@ function findSectionEnd(lines, startIdx) {
   return lines.length;
 }
 
-function findChildKey(lines, parentStartIdx, parentEndIdx, key, expectedIndent) {
+function findChildKeyExact(lines, parentStartIdx, parentEndIdx, key, expectedIndent) {
   for (let i = parentStartIdx + 1; i < parentEndIdx; i++) {
     const line = lines[i];
     if (!line.trim() || line.trim().startsWith('#')) continue;
     if (indentOf(line) !== expectedIndent) continue;
-    if (line.trim().startsWith(`${key}:`)) return i;
+    if (line.trim() === `${key}:`) return i;
+  }
+  return -1;
+}
+
+function findChildKeyWithValue(lines, parentStartIdx, parentEndIdx, key, expectedIndent) {
+  // Matches both:
+  // - key:
+  // - key: value
+  const re = new RegExp(`^${key.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}:\\s*`);
+  for (let i = parentStartIdx + 1; i < parentEndIdx; i++) {
+    const line = lines[i];
+    if (!line.trim() || line.trim().startsWith('#')) continue;
+    if (indentOf(line) !== expectedIndent) continue;
+    if (re.test(line.trim())) return i;
   }
   return -1;
 }
@@ -64,8 +78,15 @@ function normalizeCmdItem(line) {
 }
 
 function patchTraefikCommand(lines, traefikStart, traefikEnd) {
-  const cmdIdx = findChildKey(lines, traefikStart, traefikEnd, 'command', 4);
-  if (cmdIdx < 0) throw new Error('Could not find services.traefik.command in docker-compose.yml');
+  const cmdIdxExact = findChildKeyExact(lines, traefikStart, traefikEnd, 'command', 4);
+  if (cmdIdxExact < 0) {
+    const cmdIdxValue = findChildKeyWithValue(lines, traefikStart, traefikEnd, 'command', 4);
+    if (cmdIdxValue >= 0) {
+      throw new Error('Unsupported docker-compose.yml: services.<traefik>.command must be a YAML list (command: on its own line).');
+    }
+    throw new Error('Could not find services.<traefik>.command in docker-compose.yml');
+  }
+  const cmdIdx = cmdIdxExact;
 
   // command list items start after cmdIdx and have indent 6 and "- ..."
   let i = cmdIdx + 1;
@@ -120,7 +141,7 @@ function patchTraefikCommand(lines, traefikStart, traefikEnd) {
 }
 
 function patchTraefikVolumes(lines, traefikStart, traefikEnd) {
-  const volsIdx = findChildKey(lines, traefikStart, traefikEnd, 'volumes', 4);
+  const volsIdx = findChildKeyExact(lines, traefikStart, traefikEnd, 'volumes', 4);
   if (volsIdx < 0) throw new Error('Could not find services.traefik.volumes in docker-compose.yml');
 
   const mount = './dynamic.d:/etc/traefik/dynamic.d:ro';
@@ -146,7 +167,7 @@ function patchTraefikVolumes(lines, traefikStart, traefikEnd) {
 }
 
 function patchTraefikNetworks(lines, traefikStart, traefikEnd) {
-  const netsIdx = findChildKey(lines, traefikStart, traefikEnd, 'networks', 4);
+  const netsIdx = findChildKeyExact(lines, traefikStart, traefikEnd, 'networks', 4);
   if (netsIdx < 0) throw new Error('Could not find services.traefik.networks in docker-compose.yml');
 
   let i = netsIdx + 1;
@@ -181,22 +202,21 @@ function ensureTopLevelWebExternal(lines) {
   }
 
   const netsEnd = findSectionEnd(lines, netsIdx);
-  const webIdx = findChildKey(lines, netsIdx, netsEnd, 'web', 2);
+  const webIdx = findChildKeyExact(lines, netsIdx, netsEnd, 'web', 2);
   if (webIdx < 0) {
     lines.splice(netsIdx + 1, 0, '  web:', '    external: true');
     return lines;
   }
 
   const webEnd = findSectionEnd(lines, webIdx);
-  const extIdx = findChildKey(lines, webIdx, webEnd, 'external', 4);
+  const extIdx = findChildKeyWithValue(lines, webIdx, webEnd, 'external', 4);
   if (extIdx < 0) {
     lines.splice(webIdx + 1, 0, '    external: true');
     return lines;
   }
 
   // Ensure it's true
-  const trimmed = lines[extIdx].trim();
-  if (trimmed !== 'external: true') lines[extIdx] = '    external: true';
+  lines[extIdx] = '    external: true';
   return lines;
 }
 
@@ -217,6 +237,15 @@ async function dockerComposeUp(conn) {
   const which = await exec(conn, 'command -v docker-compose >/dev/null 2>&1 && echo "docker-compose" || echo "docker compose"');
   const cmd = which.trim() === 'docker-compose' ? 'docker-compose' : 'docker compose';
   await exec(conn, `cd /opt/traefik && ${cmd} up -d`);
+  return cmd;
+}
+
+async function dockerComposePsAny(conn, cmd) {
+  const ids = await exec(conn, `cd /opt/traefik && ${cmd} ps -q || true`);
+  return ids
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
 }
 
 async function run() {
@@ -243,7 +272,7 @@ async function run() {
     const servicesEnd = findSectionEnd(lines, servicesIdx);
 
     const envServiceName = String(process.env.TRAEFIK_SERVICE_NAME || 'traefik').trim();
-    let traefikIdx = findChildKey(lines, servicesIdx, servicesEnd, envServiceName, 2);
+    let traefikIdx = findChildKeyExact(lines, servicesIdx, servicesEnd, envServiceName, 2);
 
     // Fallback: detect by image/container_name if service name differs.
     if (traefikIdx < 0) {
@@ -255,8 +284,8 @@ async function run() {
 
         const svcStart = si;
         const svcEnd = findSectionEnd(lines, svcStart);
-        const imageIdx = findChildKey(lines, svcStart, svcEnd, 'image', 4);
-        const nameIdx = findChildKey(lines, svcStart, svcEnd, 'container_name', 4);
+        const imageIdx = findChildKeyWithValue(lines, svcStart, svcEnd, 'image', 4);
+        const nameIdx = findChildKeyWithValue(lines, svcStart, svcEnd, 'container_name', 4);
         const imageLine = imageIdx >= 0 ? lines[imageIdx].trim() : '';
         const nameLine = nameIdx >= 0 ? lines[nameIdx].trim() : '';
         const isTraefik =
@@ -287,7 +316,9 @@ async function run() {
 
     if (updated === compose) {
       // Nothing to change, but still ensure Traefik is up
-      await dockerComposeUp(conn);
+      const cmd = await dockerComposeUp(conn);
+      const ids = await dockerComposePsAny(conn, cmd);
+      if (ids.length === 0) throw new Error('Traefik compose has no running containers after update.');
       return;
     }
 
@@ -295,13 +326,13 @@ async function run() {
     await writeRemoteFile(conn, '/tmp/traefik-docker-compose.yml', updated, 0o644);
     await exec(conn, `sudo cp /tmp/traefik-docker-compose.yml ${remoteComposePath}`);
 
-    await dockerComposeUp(conn);
+    const cmd = await dockerComposeUp(conn);
 
-    // Basic verification (no shell greps that might fail the script unexpectedly)
-    const ps = await exec(conn, 'docker ps --filter "name=^/traefik$" --format "{{.Status}}" || true');
-    if (!ps.trim()) throw new Error('Traefik container not running after update.');
+    // Verification: use compose ps (doesn't assume container_name)
+    const ids = await dockerComposePsAny(conn, cmd);
+    if (ids.length === 0) throw new Error('Traefik compose has no running containers after update.');
 
-    const logs = await exec(conn, 'docker logs --tail 200 traefik 2>&1 || true');
+    const logs = await exec(conn, `docker logs --tail 200 ${ids[0]} 2>&1 || true`);
     if (/level=error|fatal|panic/i.test(logs)) {
       throw new Error('Traefik logs show errors after update. Check `docker logs traefik`.');
     }
