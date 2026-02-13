@@ -34,7 +34,7 @@ function findSectionEnd(lines, startIdx) {
   const baseIndent = indentOf(lines[startIdx]);
   for (let i = startIdx + 1; i < lines.length; i++) {
     const line = lines[i];
-    if (!line.trim()) continue;
+    if (!line.trim() || line.trim().startsWith('#')) continue;
     const ind = indentOf(line);
     if (ind <= baseIndent) return i;
   }
@@ -91,6 +91,12 @@ function patchTraefikCommand(lines, traefikStart, traefikEnd) {
   // command list items start after cmdIdx and have indent 6 and "- ..."
   let i = cmdIdx + 1;
   while (i < traefikEnd && (!lines[i].trim() || lines[i].trim().startsWith('#'))) i++;
+  if (i >= traefikEnd) {
+    throw new Error('Unsupported docker-compose.yml: services.<traefik>.command must be a non-empty YAML list.');
+  }
+  if (indentOf(lines[i]) < 6 || !lines[i].trim().startsWith('-')) {
+    throw new Error('Unsupported docker-compose.yml: services.<traefik>.command must be a YAML list (items like "- --flag=...").');
+  }
 
   const items = [];
   const extraLines = [];
@@ -142,7 +148,13 @@ function patchTraefikCommand(lines, traefikStart, traefikEnd) {
 
 function patchTraefikVolumes(lines, traefikStart, traefikEnd) {
   const volsIdx = findChildKeyExact(lines, traefikStart, traefikEnd, 'volumes', 4);
-  if (volsIdx < 0) throw new Error('Could not find services.traefik.volumes in docker-compose.yml');
+  if (volsIdx < 0) {
+    const volsIdxValue = findChildKeyWithValue(lines, traefikStart, traefikEnd, 'volumes', 4);
+    if (volsIdxValue >= 0) {
+      throw new Error('Unsupported docker-compose.yml: services.<traefik>.volumes must be a YAML list (volumes: on its own line).');
+    }
+    throw new Error('Could not find services.<traefik>.volumes in docker-compose.yml');
+  }
 
   const mount = './dynamic.d:/etc/traefik/dynamic.d:ro';
   // Find volumes list extent
@@ -168,7 +180,13 @@ function patchTraefikVolumes(lines, traefikStart, traefikEnd) {
 
 function patchTraefikNetworks(lines, traefikStart, traefikEnd) {
   const netsIdx = findChildKeyExact(lines, traefikStart, traefikEnd, 'networks', 4);
-  if (netsIdx < 0) throw new Error('Could not find services.traefik.networks in docker-compose.yml');
+  if (netsIdx < 0) {
+    const netsIdxValue = findChildKeyWithValue(lines, traefikStart, traefikEnd, 'networks', 4);
+    if (netsIdxValue >= 0) {
+      throw new Error('Unsupported docker-compose.yml: services.<traefik>.networks must be a YAML list (networks: on its own line).');
+    }
+    throw new Error('Could not find services.<traefik>.networks in docker-compose.yml');
+  }
 
   let i = netsIdx + 1;
   while (i < traefikEnd && (!lines[i].trim() || lines[i].trim().startsWith('#'))) i++;
