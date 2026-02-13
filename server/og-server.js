@@ -1,10 +1,10 @@
 /**
  * Servidor OG para VPS: responde a /noticia/:slug com HTML contendo
  * og:image = foto da matéria (para WhatsApp/Facebook mostrarem a imagem certa).
- * Nginx deve fazer proxy de /noticia/ para este servidor (ex.: porta 3000).
+ * Nginx deve fazer proxy de /noticia/ para este servidor.
  *
  * Uso na VPS:
- *   DIST_PATH=/var/www/horapiaui OG_PORT=3000 node server/og-server.js
+ *   DIST_PATH=/var/www/horapiaui OG_PORT=<OG_PORT> node server/og-server.js
  * Env: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY (e opcional DIST_PATH, OG_PORT)
  */
 import http from 'http';
@@ -79,7 +79,11 @@ loadDotEnvFile(path.join(__dirname, '..', '.env'));
 const BASE_URL = process.env.BASE_URL || 'https://horapiaui.com';
 const LOGO_URL = `${BASE_URL}/assets/logo.png`;
 const FAVICON_URL = `${BASE_URL}/favicon.png`;
-const PORT = Number(process.env.OG_PORT) || 3001;
+const PORT = Number(process.env.OG_PORT);
+if (!Number.isFinite(PORT) || PORT <= 0) {
+  console.error('Missing/invalid OG_PORT env (set OG_PORT=<OG_PORT>).');
+  process.exit(1);
+}
 // Na VPS: arquivos em /var/www/horapiaui (parent de server/). Local: dist/
 const DIST_PATH = process.env.DIST_PATH || (fs.existsSync(path.join(__dirname, '..', 'dist')) ? path.join(__dirname, '..', 'dist') : path.join(__dirname, '..'));
 

@@ -4,6 +4,7 @@
  */
 import { Client } from 'ssh2';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -12,6 +13,35 @@ dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DOCKER_PATH = '/opt/horapiaui-backup';
 
+function loadSshPrivateKey() {
+  const rawPath =
+    process.env.VPS_SSH_KEY_PATH ||
+    process.env.VPS_PRIVATE_KEY_PATH ||
+    '';
+
+  if (!rawPath) return null;
+
+  const expanded =
+    rawPath.startsWith('~/') || rawPath === '~'
+      ? path.join(os.homedir(), rawPath.slice(1))
+      : rawPath;
+
+  try {
+    if (!fs.existsSync(expanded)) return null;
+    return fs.readFileSync(expanded, 'utf8');
+  } catch {
+    return null;
+  }
+}
+
+const privateKey = loadSshPrivateKey();
+const passphrase = process.env.VPS_SSH_KEY_PASSPHRASE || process.env.VPS_PRIVATE_KEY_PASSPHRASE || undefined;
+
+if (!privateKey) {
+  console.error('Missing VPS_SSH_KEY_PATH (.env). This script only supports SSH key auth.');
+  process.exit(1);
+}
+
 function connect() {
   return new Promise((resolve, reject) => {
     const conn = new Client();
@@ -19,9 +49,9 @@ function connect() {
     conn.on('ready', () => resolve(conn));
     conn.connect({
       host: process.env.VPS_HOST,
-      port: 22,
       username: process.env.VPS_USER,
-      password: process.env.VPS_PASSWORD,
+      privateKey,
+      passphrase,
       readyTimeout: 30000
     });
   });

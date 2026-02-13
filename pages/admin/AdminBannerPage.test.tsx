@@ -7,23 +7,25 @@ import AdminBannerPage from './AdminBannerPage';
 vi.mock('../../lib/supabase', () => ({
   supabase: {
     from: vi.fn(() => {
-      const chain = {
-        select: vi.fn(() => chain),
-        single: vi.fn().mockResolvedValue({
-          data: {
-            id: '1',
-            title: 'Test Banner',
-            video_url: 'https://youtube.com/test',
-            alignment: 'left',
-            is_active: true,
-          },
+      return {
+        select: vi.fn().mockResolvedValue({
+          data: [
+            {
+              id: '1',
+              title: 'Test Banner',
+              video_url: 'https://youtube.com/test',
+              alignment: 'left',
+              is_active: true,
+              position: 'home_main',
+            },
+          ],
           error: null,
         }),
-        update: vi.fn().mockResolvedValue({ error: null }),
+        update: vi.fn(() => ({
+          eq: vi.fn().mockResolvedValue({ error: null }),
+        })),
         insert: vi.fn().mockResolvedValue({ error: null }),
-        eq: vi.fn(() => chain)
       };
-      return chain;
     }),
   },
 }));
@@ -38,10 +40,10 @@ describe('AdminBannerPage ARIA attributes', () => {
 
     // Wait for loading to finish
     await waitFor(() => {
-      expect(screen.queryByText('Banner Dinâmico')).toBeInTheDocument();
+      expect(screen.queryByText('Gerenciar Banners')).toBeInTheDocument();
     });
 
-    const toggleCheckbox = screen.getByRole('checkbox', { name: /Exibir Banner no Site/i });
+    const toggleCheckbox = screen.getByRole('checkbox', { name: /Exibir Banner\?/i });
     expect(toggleCheckbox).toBeInTheDocument();
 
     expect(toggleCheckbox).toBeChecked();
@@ -57,7 +59,7 @@ describe('AdminBannerPage ARIA attributes', () => {
     render(<AdminBannerPage />);
 
     await waitFor(() => {
-      expect(screen.queryByText('Banner Dinâmico')).toBeInTheDocument();
+      expect(screen.queryByText('Gerenciar Banners')).toBeInTheDocument();
     });
 
     const rightRadio = screen.getByRole('radio', { name: /Vídeo à Direita/i });
@@ -75,7 +77,7 @@ describe('AdminBannerPage ARIA attributes', () => {
     const { container } = render(<AdminBannerPage />);
 
     await waitFor(() => {
-      expect(screen.queryByText('Banner Dinâmico')).toBeInTheDocument();
+      expect(screen.queryByText('Gerenciar Banners')).toBeInTheDocument();
     });
 
     const results = await axe(container);

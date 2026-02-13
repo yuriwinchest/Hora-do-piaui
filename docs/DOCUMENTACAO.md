@@ -90,7 +90,7 @@ Tudo que precisa para acessar a VPS e o banco está no `.env`. O deploy usa SSH 
    ```bash
    node scripts/vps_nginx_update.js
    ```  
-   Envia o `nginx_horapiaui.conf` do projeto para a VPS e recarrega o Nginx (proxy `/noticia/` → servidor OG, fallback se o servidor estiver parado).
+   Envia o `nginx_horapiaui.conf` do projeto para a VPS e recarrega o Nginx (proxy `/noticia/` → servidor OG). O upstream do OG **não fica hardcoded** no GitHub: ele vem de `OG_UPSTREAM` no seu `.env` local (não commitar).
 
 3. **Subir o servidor OG (foto da matéria no WhatsApp)**  
    ```bash
@@ -114,15 +114,16 @@ Tudo que precisa para acessar a VPS e o banco está no `.env`. O deploy usa SSH 
 Para ao compartilhar um link de notícia no WhatsApp aparecer a **foto da matéria** (e não a logo):
 
 1. **Deploy** – O `npm run deploy` já envia a pasta `server/` para a VPS.
-2. **Nginx** – Use o `nginx_horapiaui.conf` do projeto (já tem o proxy de `/noticia/` para o servidor OG na porta 3000 e fallback se o servidor estiver parado). Copie para a VPS e recarregue: `nginx -s reload`.
+2. **Nginx** – Use o `nginx_horapiaui.conf` do projeto (proxy de `/noticia/` para o servidor OG). O upstream é configurado por `OG_UPSTREAM` no `.env` local e aplicado via `node scripts/vps_nginx_update.js`.
 3. **Rodar o servidor OG na VPS** – Na VPS, configure as env do Supabase (o mesmo banco do site) e inicie o servidor:
    - Crie em `/var/www/horapiaui` um `.env` com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (ou exporte no sistema / pm2).
-   - Rode: `cd /var/www/horapiaui && DIST_PATH=/var/www/horapiaui OG_PORT=3000 node server/og-server.js`
+   - Rode: `cd /var/www/horapiaui && DIST_PATH=/var/www/horapiaui OG_PORT=<OG_PORT> node server/og-server.js`
    - Para ficar sempre ligado: use **pm2** – `pm2 start server/og-server.js --name og-server --cwd /var/www/horapiaui` e defina as env no ecosystem ou no .env na mesma pasta.
 
 O servidor OG lê a notícia no **Supabase** (tabela `horapiaui_news`, coluna `image`). Se ao trocar de banco a coluna `image` ficou vazia ou com URL quebrada, a foto da matéria não aparece; garanta que cada notícia tenha a URL da imagem no banco.
 
-**Porta:** o servidor OG usa a porta **3001** (a 3000 é do outro site na VPS). O Nginx faz proxy de `/noticia/` para `127.0.0.1:3001`. O servidor carrega o `.env` de `/var/www/horapiaui/.env` (caminho fixo em relação ao `server/`), para funcionar corretamente com pm2.
+Observação:
+- `OG_PORT` e `OG_UPSTREAM` são variáveis do seu ambiente (não ficam no GitHub). Isso evita expor portas internas da VPS na documentação/código público.
 
 ---
 

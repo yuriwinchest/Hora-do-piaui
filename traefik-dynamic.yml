@@ -1,0 +1,53 @@
+http:
+  routers:
+    # Legacy Sites
+    fatopago:
+      rule: "Host(`fatopago.com`) || Host(`www.fatopago.com`)"
+      service: legacy-nginx
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    fazservico:
+      rule: "Host(`fazservico.com.br`) || Host(`www.fazservico.com.br`) || Host(`xn--fazservio-x3a.com.br`) || Host(`www.xn--fazservio-x3a.com.br`)"
+      service: legacy-nginx
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    # Hora do Piaui - OG Server (Priority High)
+    horapiaui-og:
+      rule: "(Host(`horapiaui.com`) || Host(`www.horapiaui.com`)) && PathPrefix(`/noticia/`)"
+      priority: 100
+      service: horapiaui-og
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    # Hora do Piaui - Frontend (Default)
+    horapiaui-frontend:
+      rule: "Host(`horapiaui.com`) || Host(`www.horapiaui.com`)"
+      service: horapiaui-frontend
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+  services:
+    legacy-nginx:
+      loadBalancer:
+        servers:
+          - url: "http://<LEGACY_UPSTREAM>"
+    
+    horapiaui-og:
+      loadBalancer:
+        servers:
+          - url: "http://horapiaui-og:<OG_PORT>"
+    
+    horapiaui-frontend:
+      loadBalancer:
+        servers:
+          - url: "http://horapiaui-frontend:<FRONTEND_PORT>"

@@ -31,9 +31,31 @@ export const SEO: React.FC<SEOProps> = ({ title, description, image, url, type =
         imageUrl = defaultImage;
     }
 
+    const currentUrl = (() => {
+        const canonicalHost = 'horapiaui.com';
 
+        if (url) {
+            try {
+                const u = new URL(url);
+                u.protocol = 'https:';
+                u.host = canonicalHost;
+                return u.toString();
+            } catch {
+                return url;
+            }
+        }
 
-    const currentUrl = url || window.location.href.replace('https://www.horapiaui.com', baseUrl);
+        if (typeof window === 'undefined') return baseUrl;
+
+        try {
+            const u = new URL(window.location.href);
+            u.protocol = 'https:';
+            u.host = canonicalHost;
+            return u.toString();
+        } catch {
+            return baseUrl;
+        }
+    })();
 
     return (
         <Helmet>

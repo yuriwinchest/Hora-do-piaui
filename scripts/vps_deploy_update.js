@@ -1,6 +1,7 @@
 import { Client } from 'ssh2';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -11,11 +12,47 @@ const __dirname = path.dirname(__filename);
 
 const conn = new Client();
 
+function loadSshPrivateKey() {
+  const rawPath =
+    process.env.VPS_SSH_KEY_PATH ||
+    process.env.VPS_PRIVATE_KEY_PATH ||
+    '';
+
+  if (!rawPath) return null;
+
+  const expanded =
+    rawPath.startsWith('~/') || rawPath === '~'
+      ? path.join(os.homedir(), rawPath.slice(1))
+      : rawPath;
+
+  try {
+    if (!fs.existsSync(expanded)) {
+      console.warn('VPS_SSH_KEY_PATH not found:', expanded);
+      return null;
+    }
+    return fs.readFileSync(expanded, 'utf8');
+  } catch (e) {
+    console.warn('Failed to read VPS SSH private key:', e?.message || e);
+    return null;
+  }
+}
+
+const privateKey = loadSshPrivateKey();
+const passphrase = process.env.VPS_SSH_KEY_PASSPHRASE || process.env.VPS_PRIVATE_KEY_PASSPHRASE || undefined;
+
+if (!privateKey) {
+  console.error('Missing VPS_SSH_KEY_PATH (.env). This script only supports SSH key auth.');
+  process.exit(1);
+}
+
 const vpsConfig = {
   host: process.env.VPS_HOST,
-  port: 22,
   username: process.env.VPS_USER,
-  password: process.env.VPS_PASSWORD
+  privateKey,
+  passphrase,
+  readyTimeout: 60000,
+  keepaliveInterval: 5000,
+  keepaliveCountMax: 10,
 };
 
 // Nginx ativo usa root /var/www/horapiaui (não /dist!)
@@ -77,7 +114,29 @@ conn.on('ready', () => {
       
       sftp.mkdir(REMOTE_PATH, { mode: '0755' }, (err) => {
         uploadDir(sftp, localDist, REMOTE_PATH).then(() => {
+          const localServer = path.resolve(__dirname, '../server');
+          if (fs.existsSync(localServer)) {
+            return uploadDir(sftp, localServer, REMOTE_PATH + '/server').then(() => {
+              console.log('Server OG enviado.');
+            });
+          }
+          return Promise.resolve();
+        }).then(() => {
           console.log('Upload complete.');
+          // Reiniciar og-server para ler o novo index.html
+          console.log('Restarting og-server...');
+          return new Promise((resolve, reject) => {
+            conn.exec('pm2 restart og-server 2>&1', (err, stream) => {
+              if (err) { console.warn('PM2 restart warning:', err.message); return resolve(); }
+              let out = '';
+              stream.on('data', (d) => out += d.toString());
+              stream.on('close', () => {
+                console.log('og-server restarted.');
+                resolve();
+              });
+            });
+          });
+        }).then(() => {
           conn.end();
         }).catch(err => {
           console.error('Upload error:', err);
@@ -89,4 +148,7 @@ conn.on('ready', () => {
     console.error('Clean remote error:', err);
     conn.end();
   });
+}).on('error', (err) => {
+  console.error('SSH error:', err.message);
+  process.exit(1);
 }).connect(vpsConfig);

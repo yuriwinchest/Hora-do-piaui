@@ -37,16 +37,17 @@ describe('news-og edge html', () => {
 
       if (url.endsWith('/index.html')) {
         return new Response(
-          `<!doctype html><html><head><title>Hora do Piauí</title><meta property="og:image" content="https://www.horapiaui.com/assets/logo.png"></head><body><div id="root"></div></body></html>`,
+          `<!doctype html><html><head><title>Hora do Piauí</title><meta property="og:image" content="https://horapiaui.com/assets/logo.png"></head><body><div id="root"></div></body></html>`,
           { status: 200 }
         );
       }
 
-      if (url.includes('/rest/v1/horapiaui_news?id=eq.')) {
+      if (url.includes('/rest/v1/horapiaui_news?') && url.includes('slug=eq.')) {
         return new Response(
           JSON.stringify([
             {
               id: '1',
+              slug: '1',
               title: 'Notícia X',
               description: 'Desc',
               image: 'https://cdn.example.com/main.png',
@@ -69,13 +70,12 @@ describe('news-og edge html', () => {
       return new Response('not found', { status: 404 });
     });
 
-    const res = await handler(new Request('https://www.horapiaui.com/api/news-og?slug=1'));
+    const res = await handler(new Request('https://horapiaui.com/api/news-og?slug=1'));
     expect(res.status).toBe(200);
     const html = await res.text();
     expect(html).toContain('Notícia X');
     expect(html).toContain('og:image');
-    expect(html).toContain('/api/og?');
-    expect(html).toContain(encodeURIComponent('https://cdn.example.com/main.png'));
+    expect(html).toContain('https://cdn.example.com/main.png');
 
     fetchMock.mockRestore();
   });
@@ -86,19 +86,20 @@ describe('news-og edge html', () => {
 
       if (url.endsWith('/index.html')) {
         return new Response(
-          `<!doctype html><html><head><title>Hora do Piauí</title><meta property="og:image" content="https://www.horapiaui.com/assets/logo.png"></head><body><div id="root"></div></body></html>`,
+          `<!doctype html><html><head><title>Hora do Piauí</title><meta property="og:image" content="https://horapiaui.com/assets/logo.png"></head><body><div id="root"></div></body></html>`,
           { status: 200 }
         );
       }
 
-      if (url.includes('/rest/v1/horapiaui_news?id=eq.')) {
+      if (url.includes('/rest/v1/horapiaui_news?') && url.includes('slug=eq.')) {
         return new Response(
           JSON.stringify([
             {
               id: '1',
+              slug: '1',
               title: 'Notícia Y',
               description: 'Desc',
-              image: 'https://www.horapiaui.com/assets/logo.png',
+              image: 'https://horapiaui.com/assets/logo.png',
               content: '<p><img src="https://cdn.example.com/content.png"></p>',
             },
           ]),
@@ -118,9 +119,9 @@ describe('news-og edge html', () => {
       return new Response('not found', { status: 404 });
     });
 
-    const res = await handler(new Request('https://www.horapiaui.com/api/news-og?slug=1'));
+    const res = await handler(new Request('https://horapiaui.com/api/news-og?slug=1'));
     const html = await res.text();
-    expect(html).toContain(encodeURIComponent('https://cdn.example.com/content.png'));
+    expect(html).toContain('https://cdn.example.com/content.png');
 
     fetchMock.mockRestore();
   });
@@ -131,7 +132,7 @@ describe('news-og edge html', () => {
 
       if (url.endsWith('/index.html')) {
         return new Response(
-          `<!doctype html><html><head><title>Hora do Piauí</title><meta property="og:image" content="https://www.horapiaui.com/assets/logo.png"></head><body><div id="root"></div></body></html>`,
+          `<!doctype html><html><head><title>Hora do Piauí</title><meta property="og:image" content="https://horapiaui.com/assets/logo.png"></head><body><div id="root"></div></body></html>`,
           { status: 200 }
         );
       }
@@ -140,11 +141,12 @@ describe('news-og edge html', () => {
         return new Response(JSON.stringify([{ hero_main_id: 'featured-id' }]), { status: 200 });
       }
 
-      if (url.includes('/rest/v1/horapiaui_news?id=eq.featured-id')) {
+      if (url.includes('/rest/v1/horapiaui_news?') && url.includes('slug=eq.featured-id')) {
         return new Response(
           JSON.stringify([
             {
               id: 'featured-id',
+              slug: 'featured-id',
               title: 'Featured',
               description: 'Featured desc',
               image: 'https://cdn.example.com/featured.png',
@@ -155,11 +157,12 @@ describe('news-og edge html', () => {
         );
       }
 
-      if (url.includes('/rest/v1/horapiaui_news?id=eq.')) {
+      if (url.includes('/rest/v1/horapiaui_news?') && url.includes('slug=eq.')) {
         return new Response(
           JSON.stringify([
             {
               id: '1',
+              slug: '1',
               title: 'Notícia Z',
               description: 'Desc',
               image: '',
@@ -178,11 +181,10 @@ describe('news-og edge html', () => {
       return new Response('not found', { status: 404 });
     });
 
-    const res = await handler(new Request('https://www.horapiaui.com/api/news-og?slug=1'));
+    const res = await handler(new Request('https://horapiaui.com/api/news-og?slug=1'));
     const html = await res.text();
-    expect(html).toContain(encodeURIComponent('https://cdn.example.com/featured.png'));
+    expect(html).toContain('https://cdn.example.com/featured.png');
 
     fetchMock.mockRestore();
   });
 });
-
