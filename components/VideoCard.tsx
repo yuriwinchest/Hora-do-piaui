@@ -29,6 +29,14 @@ const VideoCard: React.FC<VideoCardProps> = ({ item }) => {
   const isInstagram = item.url?.includes('instagram.com');
   const youtubeId = getYouTubeId(item.url);
 
+  // Fallback de thumbnail: prioriza coluna do banco, depois deriva do YouTube,
+  // e so cai em placeholder se nao houver nada (Instagram nao da pra derivar
+  // sem chamada server-side ao oEmbed).
+  const thumbSrc =
+    item.image ||
+    item.thumbnail ||
+    (youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : 'https://placehold.co/600x600?text=Video');
+
   // Fechar modal com ESC (apenas YouTube)
   useEffect(() => {
     if (!isExpanded) return;
@@ -74,11 +82,20 @@ const VideoCard: React.FC<VideoCardProps> = ({ item }) => {
           onClick={handlePlay}
         >
           <img
-            src={item.image || 'https://placehold.co/600x600?text=Video'}
+            src={thumbSrc}
             alt={item.title}
+            loading="lazy"
             className="w-full h-full object-cover object-[center_25%] group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://placehold.co/600x600?text=No+Image';
+              const img = e.target as HTMLImageElement;
+              // Se ja eh placeholder, evita loop
+              if (img.src.includes('placehold.co')) return;
+              // Tenta YouTube derivado antes do placeholder
+              if (youtubeId && !img.src.includes('img.youtube.com')) {
+                img.src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+                return;
+              }
+              img.src = 'https://placehold.co/600x600?text=Video';
             }}
           />
 

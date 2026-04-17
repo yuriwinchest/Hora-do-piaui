@@ -39,18 +39,30 @@ const HomePage: React.FC<HomePageProps> = ({ items, config }) => {
     useEffect(() => {
         const fetchVideos = async () => {
             try {
-                // Videos
+                // Videos: mapear snake_case (banco) -> camelCase (componente).
+                // Sem o map, video.tag_color/video.image podem nao popular tagColor/image
+                // do VideoCard, deixando o card sem capa e sem cor de tag.
                 const { data: videos, error: videosError } = await supabase
                     .from('horapiaui_videos')
                     .select('*')
                     .order('created_at', { ascending: false })
                     .limit(5);
-                
+
                 if (videosError) {
                     console.warn('Erro ao carregar vídeos:', videosError.message);
                 } else if (videos) {
-                    setLatestVideos(videos);
-                    setSelectedVideo(videos[0]);
+                    const mapped = videos.map((v: any) => ({
+                        id: v.id,
+                        title: v.title,
+                        image: v.image || v.thumbnail,
+                        thumbnail: v.thumbnail || v.image,
+                        url: v.url,
+                        duration: v.duration,
+                        tag: v.tag,
+                        tagColor: v.tag_color,
+                    }));
+                    setLatestVideos(mapped);
+                    setSelectedVideo(mapped[0]);
                 }
 
                 // Banners - .limit(1) evita 406 em tabela vazia
