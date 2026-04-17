@@ -162,28 +162,34 @@ Estas regras valem **apenas** para ações com impacto em produção ou potencia
 
 ## 7. Fluxo de deploy obrigatório
 
-Build é **sempre local**. O `scripts/vps_deploy_update.js` faz atomic swap e já está testado.
+Build é **sempre local**. **Sempre limpar local E VPS antes de subir** — nunca confiar em "atomic swap arquivo-a-arquivo": arquivos antigos avulsos podem ficar e o nginx/Node 2 ou outro server acabar servindo bundle antigo. A regra é **dist completamente novo, em servidor completamente limpo**.
 
-**Ordem exata:**
+**Ordem exata (regra de ouro: zero resíduo):**
 
 1. **Atualizar `.env` local** se for mudança de env (ex.: `VITE_SUPABASE_URL`).
-2. **Build local**:
+2. **Limpar `dist/` local**:
+   ```bash
+   rm -rf dist
+   ```
+3. **Build local limpo**:
    ```bash
    npm run build:only
    ```
-   (limpa `dist/` via `clean:dist` já integrado em `npm run build`; use `build:only` se quiser pular o deploy automático).
-3. **Validar bundle** (smoke check local):
+4. **Validar bundle** (smoke check local):
    ```bash
    grep -oE 'https://[^"]*supabase[^"]*' dist/assets/*.js | sort -u
    ```
    A URL esperada é `https://horapiaui.com/supabase`. Se aparecer `mkfkiefwltdepgheynco.supabase.co` como target do cliente, parar: `.env` está errado.
-4. **Deploy**:
+5. **Limpar conteúdo da pasta na VPS** (NÃO deletar a pasta principal `/var/www/horapiaui` — ela é mount do container; só apagar o conteúdo entregável):
+   ```bash
+   ssh -i ~/.ssh/fatopago_key root@72.60.53.191 "cd /var/www/horapiaui && rm -rf assets index.html *.png *.svg manifest.json robots.txt server .deploy_tmp_* .old_*"
+   ```
+   Preserva: `.env` (segredo do og-server), `package.json`, `node_modules` (se houver).
+6. **Deploy do bundle novo** (atomic swap como reforço, mas a pasta já está limpa):
    ```bash
    node scripts/vps_deploy_update.js
    ```
-   Esse script:
-   - Sobe `dist/` + `server/` para staging em `/var/www/horapiaui/.deploy_tmp_<stamp>`
-   - Swap atômico preservando `.env` remoto
+   O script faz upload em `.deploy_tmp_<stamp>`, swap atômico preservando `.env`, e restart **somente** dos containers `horapiaui-og` e `horapiaui-frontend`.
    - Restart **somente** dos containers `horapiaui-og` e `horapiaui-frontend` (por nome exato)
 5. **Verificar no ar**:
    - HTTP 200: `curl -sI https://horapiaui.com | head -5`
