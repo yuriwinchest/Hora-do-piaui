@@ -43,3 +43,12 @@ auth-users.csv
 *.dump
 db_*.sql
 *.backup
+
+# Artefatos temporarios do Vite (gerados pelo HMR)
+vite.config.ts.timestamp-*.mjs
+
+# Configs de outras apps que vivem na mesma VPS - NAO pertencem aqui
+fatopago.com.conf
+fazservico.conf
+docker-compose-traefik.yml
+horapiaui-nginx.conf
