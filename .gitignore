@@ -37,3 +37,9 @@ dist-ssr
 vps.env
 *.tgz
 source_dump.sql
+
+# Dumps com dados sensiveis (NUNCA commitar)
+auth-users.csv
+*.dump
+db_*.sql
+*.backup
