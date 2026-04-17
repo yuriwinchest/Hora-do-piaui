@@ -282,3 +282,69 @@ git diff --cached | grep -iE 'password|secret|service_role|jwt|bearer' || echo '
 ```
 
 Se identificar vazamento acidental, **parar o commit**, remover o arquivo da staging e do histórico (se já commitou), e rotacionar a credencial exposta.
+
+---
+
+## 12. Workflow de Git: push direto vs PR
+
+Projeto solo dev sem CI/CD não precisa de cerimônia de PR pra cada vírgula. Mas mudança sensível **tem** que passar por revisão antes de prod, mesmo que essa revisão seja você mesmo lendo o diff antes de mergear. Regra dupla:
+
+### 12.1 Push direto em `main` — quando OK
+Permitido para mudanças **triviais e reversíveis**:
+- 1-2 arquivos modificados
+- Não toca em banco, autenticação, infra, deploy script, ou pagamento
+- Tipos: typo, ajuste de cor/texto, fix de UI sem regressão funcional, ajuste de log
+- Commit message ainda obrigatório no padrão (resumo + contexto curto + Co-Authored-By se houver pair)
+
+### 12.2 Branch + PR — quando obrigatório
+Para mudanças **sensíveis ou com superfície maior**:
+- Toca em **3+ arquivos** ou **3+ módulos**
+- Envolve **banco** (migration, função, policy, trigger, RLS)
+- Envolve **autenticação, admin, RLS, ou permissões**
+- Toca em **`nginx.conf`, Traefik, Docker Compose, scripts de deploy**
+- Toca em **integrações externas** (novo SDK, webhook)
+- Refatoração ampla mesmo que sem mudança de comportamento
+
+Fluxo:
+1. `git checkout -b fix/<descricao-curta>` ou `feat/<descricao>` ou `chore/<descricao>`
+2. Implementar + commit local seguindo padrão
+3. `git diff main...HEAD` — ler **você mesmo** o diff inteiro antes de abrir PR. Não delegue essa leitura.
+4. `git push -u origin <branch>`
+5. `gh pr create --title "<titulo curto>" --body "$(cat <<'EOF' ... EOF)"` com o template abaixo
+6. Auto-merge só após smoke check em ambiente equivalente (ou após validar manualmente o que vai pra prod)
+
+### 12.3 Template de PR (PT-BR)
+
+```markdown
+## Resumo
+- O que mudou (1-3 bullets focados no "porquê", não no "o quê")
+- Motivação ou bug que corrige
+
+## Plano de teste
+- [ ] `npm run build:only` passa sem erro
+- [ ] (frontend) curl HTTPS 200 em `https://horapiaui.com`
+- [ ] (frontend) bundle `assets/index-<hash>.js` novo é o servido
+- [ ] (banco) query de verificação confirma estado esperado
+- [ ] (OG) `curl https://horapiaui.com/noticia/<slug>` retorna meta tags corretas
+- [ ] containers vizinhos (`fatopago`, `fazservico`, `appwrite-*`, `traefik`) com uptime intacto
+
+## Risco e rollback
+- Risco principal: <ex: invalidação de cache, tempo de restart, mudança de schema>
+- Plano de rollback: <ex: revert do commit + redeploy / restore da pasta `.old_<stamp>` na VPS / revert da migration X>
+```
+
+### 12.4 Antes de qualquer push (regra geral)
+
+Sempre rodar, em ordem:
+```bash
+git status --short                                    # ver o que vai
+git diff --cached | grep -iE 'password|secret|service_role|jwt|bearer' || echo 'OK'   # scan de secrets
+git log origin/main..HEAD --oneline                   # commits pendentes
+git diff origin/main...HEAD --stat                    # tamanho do delta
+```
+
+Se algo aí surpreender, **parar e investigar**. Push direto sem essa checagem é como apertar Enter de olhos fechados.
+
+### 12.5 Sobre review automatizado (Codex / outras ferramentas)
+
+Não adotamos hoje. Quando você está numa sessão com agente (Claude, Cursor, Copilot), **a revisão é o próprio agente** durante a conversa — adicionar Codex em paralelo é redundante e custa OpenAI subscription. Se um dia o projeto crescer pra ter time >1 pessoa, vale reavaliar.
