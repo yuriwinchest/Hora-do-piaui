@@ -5,6 +5,7 @@ import { NewsItem } from '../types';
 import { PageContainer } from '../components/common/PageContainer';
 import { SEO } from '../components/common/SEO';
 import { supabase } from '../lib/supabase';
+import { formatDateLong } from '../utils/dateTime';
 
 interface NewsDetailPageProps {
     items: NewsItem[];
@@ -100,7 +101,7 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                             {news.category || 'Notícia'}
                         </span>
                         <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">
-                            {news.date}
+                            {formatDateLong(news.date || '')}
                         </span>
                     </div>
 
@@ -117,7 +118,7 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                     {/* Meta & Share */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-t border-gray-100 pt-6">
                         <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
-                            <span>Publicado em {news.date} às {news.time}</span>
+                            <span>Publicado em {formatDateLong(news.date || '')} às {news.time}</span>
                         </div>
 
                         {/* Social Share */}
@@ -205,7 +206,7 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                     <img
                         src={news.image}
                         alt={news.title}
-                        className="w-full h-auto object-cover max-h-[700px] transition-transform duration-700 group-hover:scale-[1.01]"
+                        className="w-full h-auto object-cover object-[center_25%] max-h-[700px] transition-transform duration-700 group-hover:scale-[1.01]"
                         referrerPolicy="no-referrer"
                         loading="eager"
                     />
@@ -218,7 +219,7 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                 </div>
 
                 {/* Article Content */}
-                <div className="prose prose-lg md:prose-xl max-w-none font-serif text-black prose-headings:text-black prose-p:text-black prose-strong:text-black prose-a:text-black leading-loose mb-20 first-letter:text-5xl first-letter:font-black first-letter:text-primary first-letter:mr-3 first-letter:float-left">
+                <div className="prose prose-lg md:prose-xl max-w-none text-black prose-headings:text-black prose-p:text-black prose-strong:text-black prose-a:text-black leading-loose mb-20 first-letter:text-5xl first-letter:font-black first-letter:text-primary first-letter:mr-3 first-letter:float-left">
                     {news.content?.startsWith('<') ? (
                         <div dangerouslySetInnerHTML={{ __html: news.content }} />
                     ) : (
@@ -248,7 +249,7 @@ const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ items }) => {
                                     <img
                                         src={item.image}
                                         alt={item.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        className="w-full h-full object-cover object-[center_25%] group-hover:scale-105 transition-transform duration-500"
                                         referrerPolicy="no-referrer"
                                         loading="lazy"
                                     />

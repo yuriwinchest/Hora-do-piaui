@@ -19,6 +19,7 @@ const Footer: React.FC = () => {
           <Link to="/politica" className="hover:text-white transition-colors">Política</Link>
           <Link to="/geral" className="hover:text-white transition-colors">Geral</Link>
           <Link to="/videos" className="hover:text-white transition-colors">Vídeo</Link>
+          <Link to="/fale-conosco" className="hover:text-white transition-colors">Fale Conosco</Link>
         </nav>
 
         <div className="mt-12 text-center text-xs text-gray-600">

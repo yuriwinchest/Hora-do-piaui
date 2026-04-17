@@ -1,39 +1,48 @@
-
-import { createClient } from '@supabase/supabase-js';
+import pg from 'pg';
 import dotenv from 'dotenv';
-import fs from 'fs';
 
-// Carregar variáveis de ambiente manualmente ou via dotenv padrão
 dotenv.config();
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+const connectionString =
+  process.env.POSTGRES_URL_NON_POOLING ||
+  process.env.POSTGRES_URL ||
+  process.env.DATABASE_URL ||
+  (() => {
+    const host = String(process.env.POSTGRES_HOST || '').trim();
+    const pass = String(process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD || '').trim();
+    if (!host || !pass) return '';
+    return `postgres://postgres:${encodeURIComponent(pass)}@${host}:5432/postgres?sslmode=require`;
+  })();
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Erro: Variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY são necessárias.');
+if (!connectionString) {
+  console.error('Missing DB connection env. Set POSTGRES_URL_NON_POOLING (recommended) or POSTGRES_HOST + POSTGRES_PASSWORD.');
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const { Client } = pg;
 
-async function checkColumn() {
-  console.log('Verificando coluna is_urgent na tabela horapiaui_news...');
+async function checkColumns() {
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+  });
 
-  // Tenta selecionar a coluna is_urgent de um registro
-  const { data, error } = await supabase
-    .from('horapiaui_news')
-    .select('id, is_urgent')
-    .limit(1);
+  try {
+    await client.connect();
+    
+    const res = await client.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'horapiaui_news';
+    `);
 
-  if (error) {
-    console.error('Erro ao acessar coluna:', error);
-    if (error.message.includes('does not exist') || error.code === 'PGRST204') {
-      console.log('A coluna ou tabela parece não existir ou não está acessível.');
-    }
-  } else {
-    console.log('Sucesso! Coluna is_urgent acessada corretamente.');
-    console.log('Dados retornados:', data);
+    console.log('Columns in horapiaui_news:', res.rows.map(r => r.column_name).join(', '));
+
+  } catch (err) {
+    console.error(err);
+  } finally {
+    await client.end();
   }
 }
 
-checkColumn();
+checkColumns();

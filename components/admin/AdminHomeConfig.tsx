@@ -73,6 +73,8 @@ const AdminHomeConfig: React.FC<AdminHomeConfigProps> = ({ items, config, onUpda
                             type="text"
                             value={config.mainHeadline}
                             readOnly
+                            title="Manchete Principal (Texto Grande)"
+                            placeholder="Manchete Principal (Texto Grande)"
                             className="w-full text-2xl font-serif font-black text-gray-900 p-4 bg-gray-50 rounded-2xl border-none focus:ring-0 cursor-default placeholder-gray-300"
                         />
                     </div>

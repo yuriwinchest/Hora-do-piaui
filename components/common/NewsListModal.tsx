@@ -4,19 +4,32 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { NewsItem } from '../../types';
 import { mapNewsFromDb } from '../../utils/mappers';
+import { formatDateLong } from '../../utils/dateTime';
 
 interface NewsListModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
+
 const NewsListModal: React.FC<NewsListModalProps> = ({ isOpen, onClose }) => {
     const [news, setNews] = useState<NewsItem[]>([]);
     const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        if (isOpen && news.length === 0) {
-            fetchLatestNews();
+        const handleSearch = (e: any) => {
+            setSearchTerm(e.detail || '');
+            fetchNews(e.detail || '');
+        };
+
+        window.addEventListener('news-search', handleSearch);
+        return () => window.removeEventListener('news-search', handleSearch);
+    }, []);
+
+    useEffect(() => {
+        if (isOpen && news.length === 0 && !searchTerm) {
+            fetchNews();
         }
     }, [isOpen]);
 
@@ -26,28 +39,37 @@ const NewsListModal: React.FC<NewsListModalProps> = ({ isOpen, onClose }) => {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
+            // Reset search when closing if desired, or keep it. Let's keep for now.
         }
         return () => {
             document.body.style.overflow = 'unset';
         };
     }, [isOpen]);
 
-    const fetchLatestNews = async () => {
+    const fetchNews = async (query: string = '') => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
+            let supabaseQuery = supabase
                 .from('horapiaui_news')
                 .select('*')
                 .eq('status', 'published')
-                .order('created_at', { ascending: false })
-                .limit(20);
+                .order('created_at', { ascending: false });
+
+            if (query) {
+                // Busca por título ou categoria (tema)
+                supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,category.ilike.%${query}%`);
+            } else {
+                supabaseQuery = supabaseQuery.limit(20);
+            }
+
+            const { data, error } = await supabaseQuery;
 
             if (error) throw error;
             if (data) {
                 setNews(data.map(mapNewsFromDb));
             }
         } catch (error) {
-            console.error('Error fetching news for modal:', error);
+            console.error('Error fetching news:', error);
         } finally {
             setLoading(false);
         }
@@ -66,21 +88,52 @@ const NewsListModal: React.FC<NewsListModalProps> = ({ isOpen, onClose }) => {
             {/* Modal Content */}
             <div className="relative w-full md:w-[600px] h-[85vh] md:h-[80vh] bg-white rounded-t-3xl md:rounded-2xl shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
                 
+
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                    <div>
-                        <h2 className="text-2xl font-black font-serif text-gray-900">Últimas Notícias</h2>
-                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">
-                            Atualizações em tempo real
-                        </p>
+                <div className="p-6 border-b border-gray-100">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 className="text-2xl font-black font-serif text-gray-900">
+                                {searchTerm ? `Resultados para: ${searchTerm}` : 'Últimas Notícias'}
+                            </h2>
+                            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">
+                                {searchTerm ? `Encontramos ${news.length} resultados` : 'Atualizações em tempo real'}
+                            </p>
+                        </div>
+                        <button 
+                            onClick={onClose}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            aria-label="Fechar modal"
+                        >
+                            <X size={24} className="text-gray-500" />
+                        </button>
                     </div>
-                    <button 
-                        onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                        aria-label="Fechar modal"
-                    >
-                        <X size={24} className="text-gray-500" />
-                    </button>
+
+                    <div className="relative group">
+                        <input 
+                            type="text"
+                            placeholder="Buscar por título ou tema (ex: política)..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setSearchTerm(val);
+                                // Debounce simples via timeout ou busca direta
+                                fetchNews(val);
+                            }}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        </div>
+                        {searchTerm && (
+                            <button 
+                                onClick={() => { setSearchTerm(''); fetchNews(''); }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full text-gray-400 transition-colors"
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Content List */}
@@ -130,7 +183,7 @@ const NewsListModal: React.FC<NewsListModalProps> = ({ isOpen, onClose }) => {
                                     <div className="flex items-center justify-between mt-2">
                                         <div className="flex items-center gap-1 text-[10px] text-gray-400 font-bold uppercase">
                                             <Calendar size={10} />
-                                            {item.date} {item.time && `• ${item.time}`}
+                                            {formatDateLong(item.date || '')} {item.time && `• ${item.time}`}
                                         </div>
                                         <ChevronRight size={14} className="text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                     </div>

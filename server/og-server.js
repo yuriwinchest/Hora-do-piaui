@@ -79,6 +79,54 @@ loadDotEnvFile(path.join(__dirname, '..', '.env'));
 const BASE_URL = process.env.BASE_URL || 'https://horapiaui.com';
 const LOGO_URL = `${BASE_URL}/assets/logo.png`;
 const FAVICON_URL = `${BASE_URL}/favicon.png`;
+
+const PRIMARY_SUPABASE_URL =
+  process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const LEGACY_SUPABASE_HOSTS = new Set(
+  String(process.env.LEGACY_SUPABASE_HOSTS || 'pxyekqpcgjwaztummzvh.supabase.co')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+);
+const SHOULD_LOG_SUPABASE_REWRITE = String(process.env.OG_DEBUG_REWRITE || '').trim() === '1';
+function rewriteLegacySupabaseUrl(absUrl) {
+  if (!absUrl || !PRIMARY_SUPABASE_URL) return absUrl;
+  try {
+    const u = new URL(absUrl);
+    if (!LEGACY_SUPABASE_HOSTS.has(u.host)) return absUrl;
+    if (SHOULD_LOG_SUPABASE_REWRITE) console.warn('[OG] Rewriting legacy Supabase host:', u.host);
+    const t = new URL(PRIMARY_SUPABASE_URL);
+    u.protocol = t.protocol;
+    u.host = t.host;
+    return u.toString();
+  } catch {
+    return absUrl;
+  }
+}
+
+function encodePathForUrl(p) {
+  return String(p || '')
+    .split('/')
+    .map((seg) => encodeURIComponent(seg))
+    .join('/');
+}
+
+function normalizeNewsImageUrl(value, supabaseUrl) {
+  const v = String(value || '').trim();
+  if (!v) return undefined;
+
+  // Absolute URL: rewrite legacy Supabase host (NXDOMAIN) to the current project.
+  if (v.startsWith('http://') || v.startsWith('https://')) return rewriteLegacySupabaseUrl(v);
+
+  // Local path on the site (assets in the SPA).
+  if (v.startsWith('/')) return `${BASE_URL}${v}`;
+
+  // If DB stores only filename/path, assume Supabase public bucket "images".
+  if (supabaseUrl) return `${supabaseUrl}/storage/v1/object/public/images/${encodePathForUrl(v)}`;
+
+  // Last resort: treat as path under the site origin.
+  return `${BASE_URL}/${v}`;
+}
 const PORT = Number(process.env.OG_PORT);
 if (!Number.isFinite(PORT) || PORT <= 0) {
   console.error('Missing/invalid OG_PORT env (set OG_PORT=<OG_PORT>).');
@@ -99,7 +147,7 @@ const ADMIN_ROLES = String(process.env.ADMIN_ROLES || 'Administrador,CEO')
 
 function normalizeAbsoluteUrl(url) {
   if (!url) return undefined;
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('http://') || url.startsWith('https://')) return rewriteLegacySupabaseUrl(url);
   if (url.startsWith('/')) return `${BASE_URL}${url}`;
   return `${BASE_URL}/${url}`;
 }
@@ -154,18 +202,37 @@ async function fetchSupabaseJson(pathSuffix, supabaseUrl, supabaseKey) {
   return res.json();
 }
 
-async function fetchNewsById(idOrSlug, supabaseUrl, supabaseKey) {
+async function fetchNewsRaw(idOrSlug, supabaseUrl, supabaseKey, select) {
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
   const column = isUUID ? 'id' : 'slug';
-  const pathSuffix = `/rest/v1/horapiaui_news?${column}=eq.${encodeURIComponent(idOrSlug)}&select=id,title,description,image,content&limit=1`;
+  const pathSuffix = `/rest/v1/horapiaui_news?${column}=eq.${encodeURIComponent(idOrSlug)}&select=${encodeURIComponent(
+    select
+  )}&limit=1`;
   const res = await fetch(`${supabaseUrl}${pathSuffix}`, {
     headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, Accept: 'application/json' },
   });
   if (!res.ok) {
-    console.error('OG Supabase', res.status, await res.text().catch(() => ''));
-    return null;
+    const txt = await res.text().catch(() => '');
+    return { ok: false, status: res.status, text: txt };
   }
   const rows = await res.json();
+  return { ok: true, rows };
+}
+
+async function fetchNewsById(idOrSlug, supabaseUrl, supabaseKey) {
+  // Prefer selecting both "image" and legacy "image_url". If the column doesn't exist, retry.
+  let out = await fetchNewsRaw(idOrSlug, supabaseUrl, supabaseKey, 'id,title,description,image,image_url,content');
+  if (!out.ok) {
+    const msg = String(out.text || '');
+    if (out.status === 400 && /image_url/i.test(msg) && /column/i.test(msg) && /exist/i.test(msg)) {
+      out = await fetchNewsRaw(idOrSlug, supabaseUrl, supabaseKey, 'id,title,description,image,content');
+    }
+  }
+  if (!out.ok) {
+    console.error('OG Supabase', out.status, String(out.text || '').slice(0, 300));
+    return null;
+  }
+  const rows = out.rows;
   if (!Array.isArray(rows)) {
     console.error('OG Supabase respondeu não-array:', JSON.stringify(rows).slice(0, 300));
     return null;
@@ -184,7 +251,7 @@ async function fetchFeaturedNewsImage(supabaseUrl, supabaseKey) {
   const heroMainId = rows?.[0]?.hero_main_id;
   if (!heroMainId) return undefined;
   const featured = await fetchNewsById(heroMainId, supabaseUrl, supabaseKey);
-  return normalizeAbsoluteUrl(featured?.image);
+  return normalizeNewsImageUrl(featured?.image || featured?.image_url, supabaseUrl);
 }
 
 function loadIndexHtml() {
@@ -212,27 +279,27 @@ async function handleNoticia(slug, supabaseUrl, primaryKey, fallbackKey) {
     if (news?.title) title = news.title;
     if (news?.description) description = news.description;
 
-    const mainImage = normalizeAbsoluteUrl(news?.image);
-    const contentImage = normalizeAbsoluteUrl(extractFirstImageFromContent(news?.content));
+    const rawMain = news?.image || news?.image_url;
+    const rawContent = extractFirstImageFromContent(news?.content);
 
-    if (mainImage && mainImage !== LOGO_URL && !mainImage.endsWith('favicon.png')) {
+    const mainImage = normalizeNewsImageUrl(rawMain, supabaseUrl);
+    const contentImage = normalizeNewsImageUrl(rawContent, supabaseUrl);
+
+    // Regra: priorizar SEMPRE a imagem da matéria. Nada de logo por padrão.
+    if (mainImage && !mainImage.endsWith('/assets/logo.png') && !mainImage.endsWith('favicon.png')) {
       chosenImage = mainImage;
-    } else if (contentImage && contentImage !== LOGO_URL) {
+    } else if (contentImage && !contentImage.endsWith('/assets/logo.png') && !contentImage.endsWith('favicon.png')) {
       chosenImage = contentImage;
-    } else {
-      const keyForFeatured = news ? primaryKey : (fallbackKey || primaryKey);
-      const featuredImage = await fetchFeaturedNewsImage(supabaseUrl, keyForFeatured);
-      if (featuredImage && featuredImage !== LOGO_URL) chosenImage = featuredImage;
     }
     
     if (chosenImage) {
       console.log(`[OG] Selected image for "${slug}": ${chosenImage}`);
     } else {
-      console.log(`[OG] No custom image found for "${slug}", falling back to Logo.`);
+      console.error(`[OG] No article image found for "${slug}". Check DB columns "image" / "image_url".`);
     }
   }
 
-  const ogImage = chosenImage || LOGO_URL;
+  const ogImage = chosenImage;
   let html = loadIndexHtml();
   if (!html) return null;
 
@@ -244,16 +311,30 @@ async function handleNoticia(slug, supabaseUrl, primaryKey, fallbackKey) {
   html = upsertMetaProperty(html, 'og:url', canonicalUrl);
   html = upsertMetaProperty(html, 'og:title', title);
   html = upsertMetaProperty(html, 'og:description', description);
-  html = upsertMetaProperty(html, 'og:image', ogImage);
-  html = upsertMetaProperty(html, 'og:image:secure_url', ogImage);
-  html = upsertMetaProperty(html, 'og:image:alt', title);
-  html = upsertMetaProperty(html, 'og:image:width', '1200');
-  html = upsertMetaProperty(html, 'og:image:height', '630');
-  html = upsertMetaProperty(html, 'og:image:type', 'image/jpeg');
+  if (ogImage) {
+    html = upsertMetaProperty(html, 'og:image', ogImage);
+    html = upsertMetaProperty(html, 'og:image:secure_url', ogImage);
+    html = upsertMetaProperty(html, 'og:image:alt', title);
+    html = upsertMetaProperty(html, 'og:image:width', '1200');
+    html = upsertMetaProperty(html, 'og:image:height', '630');
+    html = upsertMetaProperty(html, 'og:image:type', 'image/jpeg');
+  } else {
+    // Prefer missing image over wrong image (logo).
+    html = removeMetaTag(html, 'property', 'og:image');
+    html = removeMetaTag(html, 'property', 'og:image:secure_url');
+    html = removeMetaTag(html, 'property', 'og:image:alt');
+    html = removeMetaTag(html, 'property', 'og:image:width');
+    html = removeMetaTag(html, 'property', 'og:image:height');
+    html = removeMetaTag(html, 'property', 'og:image:type');
+  }
   html = upsertMetaName(html, 'twitter:card', 'summary_large_image');
   html = upsertMetaName(html, 'twitter:title', title);
   html = upsertMetaName(html, 'twitter:description', description);
-  html = upsertMetaName(html, 'twitter:image', ogImage);
+  if (ogImage) {
+    html = upsertMetaName(html, 'twitter:image', ogImage);
+  } else {
+    html = removeMetaTag(html, 'name', 'twitter:image');
+  }
 
   return html;
 }

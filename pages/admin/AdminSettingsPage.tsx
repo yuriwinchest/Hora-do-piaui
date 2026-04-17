@@ -24,6 +24,7 @@ export default function AdminSettingsPage() {
     const [newUserEmail, setNewUserEmail] = useState('');
     const [newUserPass, setNewUserPass] = useState('');
     const [newUserName, setNewUserName] = useState('');
+    const [newUserBio, setNewUserBio] = useState('');
     const [newUserRole, setNewUserRole] = useState('Jornalista');
     const [creatingUser, setCreatingUser] = useState(false);
     const [creationMsg, setCreationMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -102,29 +103,54 @@ export default function AdminSettingsPage() {
         setCreatingUser(true);
         setCreationMsg(null);
         try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+            if (!token) {
+                throw new Error('Sessão inválida. Faça login novamente.');
+            }
+
             const res = await fetch('/api/admin/create-user', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
                 body: JSON.stringify({
                     email: newUserEmail,
                     password: newUserPass,
                     fullName: newUserName,
-                    role: newUserRole
+                    role: newUserRole,
+                    bio: newUserBio
                 })
             });
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Erro ao criar usuário');
+            const raw = await res.text().catch(() => '');
+            let data: any = null;
+            if (raw) {
+                try {
+                    data = JSON.parse(raw);
+                } catch (_) {
+                    data = null;
+                }
+            }
+
+            if (!res.ok) {
+                const serverMsg = data?.error || data?.message || raw;
+                throw new Error(serverMsg || `Erro ao criar usuário (HTTP ${res.status})`);
+            }
+
+            if (!data || typeof data !== 'object') {
+                throw new Error(`Endpoint /api/admin/create-user respondeu ${res.status} sem JSON válido.`);
+            }
 
             setCreationMsg({ type: 'success', text: 'Usuário criado com sucesso!' });
-            setNewUserEmail(''); setNewUserPass(''); setNewUserName('');
+            setNewUserEmail(''); setNewUserPass(''); setNewUserName(''); setNewUserBio('');
             fetchTeam(); // Refresh list
         } catch (error: any) {
             console.error(error);
             let msg = error.message || 'Erro ao criar usuário.';
-            // Check if likely due to running locally without api support
-            if (window.location.hostname.includes('localhost') && (msg.includes('Unexpected token') || msg.includes('HTML'))) {
-                msg = 'Nota: A criação de usuários via API funciona apenas na versão de produção (Vercel).';
+            if (msg.includes('Unexpected token') || msg.includes('<!DOCTYPE') || msg.includes('<html')) {
+                msg = 'Endpoint /api não respondeu JSON. Verifique se o Nginx está fazendo proxy de /api/ para o servidor (og-server) na VPS.';
             }
             setCreationMsg({ type: 'error', text: msg });
         } finally {
@@ -311,6 +337,16 @@ export default function AdminSettingsPage() {
                                         className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors"
                                         required
                                         placeholder="Ex: João Silva"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Descrição / Bio</label>
+                                    <textarea
+                                        value={newUserBio}
+                                        onChange={(e) => setNewUserBio(e.target.value)}
+                                        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors resize-none"
+                                        rows={3}
+                                        placeholder="Resumo do jornalista (aparece no topo da matéria)"
                                     />
                                 </div>
                                 <div>

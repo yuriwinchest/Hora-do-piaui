@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Menu, X, Newspaper } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 import { HEADER_NAV } from '../constants';
 import NewsListModal from './common/NewsListModal';
 
+const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+const MESES_HEADER = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+function getDataAtualBR(): string {
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const dia = DIAS_SEMANA[now.getDay()];
+  const num = now.getDate();
+  const mes = MESES_HEADER[now.getMonth()];
+  return `${dia}, ${num} de ${mes}`;
+}
+
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isNewsModalOpen, setIsNewsModalOpen] = React.useState(false);
+  const dataAtual = useMemo(() => getDataAtualBR(), []);
 
   return (
     <header className="border-b border-gray-200">
@@ -85,8 +97,29 @@ const Header: React.FC = () => {
           ))}
         </nav>
 
-        <div className="text-xs text-gray-500 font-sans">
-          Terça-feira, 24 de Outubro
+        <div className="flex flex-col items-center md:items-end gap-2">
+          <div className="text-[10px] md:text-xs text-gray-500 font-sans font-bold uppercase tracking-wider">
+            {dataAtual}
+          </div>
+          
+          <div className="relative group w-full max-w-[200px] md:max-w-[240px]">
+            <input 
+              type="text"
+              placeholder="Buscar notícias..."
+              className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm hover:shadow-md"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  // Aqui dispararemos a busca no modal
+                  setIsNewsModalOpen(true);
+                  // Podemos usar um evento customizado ou passar via prop se refatorarmos o modal
+                  window.dispatchEvent(new CustomEvent('news-search', { detail: e.currentTarget.value }));
+                }
+              }}
+            />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+          </div>
         </div>
       </div>
     </header>

@@ -1,5 +1,6 @@
 import { NewsItem } from '../types';
 import { formatDateBR, formatTimeBR } from './dateTime';
+import { rewriteLegacySupabaseUrl } from './supabaseUrl';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const PUBLIC_IMAGES_BUCKET = 'images';
@@ -15,7 +16,8 @@ const encodePath = (p: string) =>
 export const normalizePublicImageUrl = (value?: string | null): string | null => {
     const v = (value ?? '').trim();
     if (!v) return null;
-    if (v.startsWith('http://') || v.startsWith('https://') || v.startsWith('data:') || v.startsWith('blob:')) return v;
+    if (v.startsWith('http://') || v.startsWith('https://')) return rewriteLegacySupabaseUrl(v);
+    if (v.startsWith('data:') || v.startsWith('blob:')) return v;
     if (v.startsWith('/')) return v; // local asset
     if (!SUPABASE_URL) return v; // best-effort fallback
 
@@ -25,7 +27,7 @@ export const normalizePublicImageUrl = (value?: string | null): string | null =>
 export const mapNewsFromDb = (n: any): NewsItem => ({
     id: n.id,
     title: n.title,
-    image: normalizePublicImageUrl(n.image),
+    image: normalizePublicImageUrl(n.image ?? n.image_url),
     description: n.description,
     content: n.content,
     category: n.category,

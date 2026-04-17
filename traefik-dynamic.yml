@@ -27,6 +27,16 @@ http:
       tls:
         certResolver: myresolver
 
+    # Hora do Piaui - Internal API (admin panel)
+    horapiaui-api:
+      rule: "(Host(`horapiaui.com`) || Host(`www.horapiaui.com`)) && PathPrefix(`/api/`)"
+      priority: 95
+      service: horapiaui-og
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
     # Hora do Piaui - Frontend (Default)
     horapiaui-frontend:
       rule: "Host(`horapiaui.com`) || Host(`www.horapiaui.com`)"

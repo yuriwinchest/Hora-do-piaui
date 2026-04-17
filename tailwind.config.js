@@ -11,8 +11,8 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', 'sans-serif'],
-                serif: ['Merriweather', 'serif'],
+                sans: ['Sora', 'sans-serif'],
+                serif: ['Sora', 'sans-serif'],
             },
             colors: {
                 primary: '#16a34a',

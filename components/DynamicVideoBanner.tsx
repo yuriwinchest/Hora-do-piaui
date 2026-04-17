@@ -13,7 +13,7 @@ const getEmbedUrl = (url: string) => {
     if (ytMatch && ytMatch[1]) {
         return {
             type: 'youtube',
-            src: `https://www.youtube.com/embed/${ytMatch[1]}`
+            src: `https://www.youtube-nocookie.com/embed/${ytMatch[1]}`
         };
     }
 

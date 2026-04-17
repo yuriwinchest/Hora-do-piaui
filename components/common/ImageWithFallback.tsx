@@ -50,7 +50,7 @@ export const ImageWithFallback = ({
         referrerPolicy="no-referrer"
         onError={handleError}
         onLoad={handleLoad}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        className={`w-full h-full object-cover object-[center_25%] transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
       />
     </div>
   );

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import AdminSidebar from './AdminSidebar';
 
 interface AdminLayoutProps {
-    children: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
@@ -47,7 +47,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             
             <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
                 <div className="max-w-6xl mx-auto">
-                    {children}
+                    {children || <Outlet />}
                 </div>
             </main>
         </div>

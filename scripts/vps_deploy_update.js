@@ -55,8 +55,15 @@ const vpsConfig = {
   keepaliveCountMax: 10,
 };
 
-// Nginx ativo usa root /var/www/horapiaui (não /dist!)
+// Nginx ativo usa root /var/www/horapiaui (bind mount no container).
+// Importante: nunca apagar `.env` remoto (segredo); deploy faz swap atomico do resto.
 const REMOTE_PATH = '/var/www/horapiaui';
+
+function nowStamp() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+}
 
 function uploadDir(sftp, localPath, remotePath) {
   return new Promise((resolve, reject) => {
@@ -86,68 +93,113 @@ function uploadDir(sftp, localPath, remotePath) {
   });
 }
 
-function cleanRemoteDist(conn) {
+function execRemote(conn, cmd) {
   return new Promise((resolve, reject) => {
-    // Limpa conteúdo de /var/www/horapiaui (onde nginx aponta)
-    conn.exec(`rm -rf ${REMOTE_PATH}/*`, (err, stream) => {
+    conn.exec(cmd, (err, stream) => {
       if (err) return reject(err);
+      let out = '';
+      let errOut = '';
       stream.on('close', (code) => {
-        if (code !== 0) {
-          console.warn('Clean remote warning (code:', code, ')');
-        } else {
-          console.log('Remote dist cleaned.');
-        }
-        resolve();
+        if (code !== 0) return reject(new Error(`Remote command failed (code=${code}): ${cmd}\n${errOut || out}`));
+        resolve(out);
       });
+      stream.on('data', (d) => (out += d.toString()));
+      stream.stderr.on('data', (d) => (errOut += d.toString()));
+    });
+  });
+}
+
+function prepareRemoteStaging(conn, stamp) {
+  return new Promise((resolve, reject) => {
+    const tmp = `${REMOTE_PATH}/.deploy_tmp_${stamp}`;
+    conn.exec(`mkdir -p ${tmp}`, (err, stream) => {
+      if (err) return reject(err);
+      stream.on('close', () => resolve(tmp));
       stream.on('data', (d) => process.stdout.write(d));
+      stream.stderr.on('data', (d) => process.stderr.write(d));
     });
   });
 }
 
 conn.on('ready', () => {
   console.log('Client :: ready');
-  cleanRemoteDist(conn).then(() => {
-    conn.sftp((err, sftp) => {
-      if (err) throw err;
-      const localDist = path.resolve(__dirname, '../dist');
-      console.log(`Uploading from ${localDist} to ${REMOTE_PATH}...`);
-      
-      sftp.mkdir(REMOTE_PATH, { mode: '0755' }, (err) => {
-        uploadDir(sftp, localDist, REMOTE_PATH).then(() => {
-          const localServer = path.resolve(__dirname, '../server');
-          if (fs.existsSync(localServer)) {
-            return uploadDir(sftp, localServer, REMOTE_PATH + '/server').then(() => {
-              console.log('Server OG enviado.');
-            });
-          }
-          return Promise.resolve();
-        }).then(() => {
-          console.log('Upload complete.');
-          // Reiniciar og-server para ler o novo index.html
-          console.log('Restarting og-server...');
-          return new Promise((resolve, reject) => {
-            conn.exec('pm2 restart og-server 2>&1', (err, stream) => {
-              if (err) { console.warn('PM2 restart warning:', err.message); return resolve(); }
-              let out = '';
-              stream.on('data', (d) => out += d.toString());
-              stream.on('close', () => {
-                console.log('og-server restarted.');
-                resolve();
-              });
-            });
+  const stamp = nowStamp();
+  prepareRemoteStaging(conn, stamp)
+    .then((tmpPath) => {
+      conn.sftp((err, sftp) => {
+        if (err) throw err;
+
+        const localDist = path.resolve(__dirname, '../dist');
+        const localServer = path.resolve(__dirname, '../server');
+        if (!fs.existsSync(localDist)) throw new Error('Local dist/ missing. Run build first.');
+
+        console.log(`Uploading dist -> ${tmpPath} ...`);
+        uploadDir(sftp, localDist, tmpPath)
+          .then(() => {
+            if (fs.existsSync(localServer)) {
+              console.log(`Uploading server -> ${tmpPath}/server ...`);
+              return uploadDir(sftp, localServer, `${tmpPath}/server`);
+            }
+            return Promise.resolve();
+          })
+          .then(async () => {
+            console.log('Upload complete. Performing atomic swap on VPS...');
+
+            // Swap everything except `.env` to avoid "arquivo zumbi" (old hashed assets).
+            // Keep the root directory intact (bind mount stays valid).
+            const swapCmd = `set -e
+cd ${REMOTE_PATH}
+test -f .env || (echo "Missing ${REMOTE_PATH}/.env (will not proceed)" 1>&2; exit 2)
+cp -a .env .env.bak.${stamp} || true
+# Ensure Node treats server/*.js as ESM (the OG container runs node server/og-server.mjs).
+if [ ! -f package.json ]; then
+  cat > package.json <<'JSON'
+{"name":"horapiaui-site","private":true,"type":"module"}
+JSON
+fi
+old=".old_${stamp}"
+tmp=".deploy_tmp_${stamp}"
+rm -rf "$old"
+mkdir -p "$old"
+for p in assets 22.png favicon.png favicon.svg index.html manifest.json server; do
+  if [ -e "$p" ]; then mv "$p" "$old/$p"; fi
+done
+for p in assets 22.png favicon.png favicon.svg index.html manifest.json server; do
+  if [ -e "$tmp/$p" ]; then mv "$tmp/$p" "$p"; fi
+done
+rm -rf "$tmp"
+rm -rf "$old"
+`;
+
+            await execRemote(conn, swapCmd);
+
+            // Restart services to avoid serving stale code/assets.
+            // Prefer Docker containers if they exist; fallback to pm2 (legacy).
+            const restartCmd = `set -e
+if command -v docker >/dev/null 2>&1; then
+  if docker ps --format '{{.Names}}' | grep -qx 'horapiaui-og'; then docker restart horapiaui-og >/dev/null; fi
+  if docker ps --format '{{.Names}}' | grep -qx 'horapiaui-frontend'; then docker restart horapiaui-frontend >/dev/null; fi
+fi
+if command -v pm2 >/dev/null 2>&1; then
+  pm2 restart og-server >/dev/null 2>&1 || true
+fi
+echo "DEPLOY_OK"
+`;
+            await execRemote(conn, restartCmd);
+
+            console.log('Deploy OK on VPS.');
+            conn.end();
+          })
+          .catch((e) => {
+            console.error('Deploy error:', e?.message || e);
+            conn.end();
           });
-        }).then(() => {
-          conn.end();
-        }).catch(err => {
-          console.error('Upload error:', err);
-          conn.end();
-        });
       });
+    })
+    .catch((err) => {
+      console.error('Prepare remote error:', err?.message || err);
+      conn.end();
     });
-  }).catch(err => {
-    console.error('Clean remote error:', err);
-    conn.end();
-  });
 }).on('error', (err) => {
   console.error('SSH error:', err.message);
   process.exit(1);

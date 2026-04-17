@@ -18,7 +18,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
             <img
               src={item.image}
               alt={item.title}
-              className="w-32 h-24 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
+              className="w-32 h-24 object-cover object-[center_25%] rounded bg-gray-200 flex-shrink-0 shadow-sm"
               referrerPolicy="no-referrer"
               loading="lazy"
             />
@@ -54,7 +54,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, variant = 'vertical', showDes
               <img
                 src={item.image}
                 alt={item.title}
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 filter brightness-105 contrast-105 absolute inset-0"
+                className="w-full h-full object-cover object-[center_25%] transform group-hover:scale-105 transition-transform duration-500 filter brightness-105 contrast-105 absolute inset-0"
                 referrerPolicy="no-referrer"
                 loading="lazy"
               />

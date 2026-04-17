@@ -1,71 +1,81 @@
-
-import { createClient } from '@supabase/supabase-js';
+import pg from 'pg';
 import dotenv from 'dotenv';
-import path from 'path';
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config();
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const connectionString =
+  process.env.POSTGRES_URL_NON_POOLING ||
+  process.env.POSTGRES_URL ||
+  process.env.DATABASE_URL ||
+  (() => {
+    const host = String(process.env.POSTGRES_HOST || '').trim();
+    const pass = String(process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD || '').trim();
+    if (!host || !pass) return '';
+    return `postgres://postgres:${encodeURIComponent(pass)}@${host}:5432/postgres?sslmode=require`;
+  })();
 
-if (!supabaseUrl || !serviceRoleKey) {
-    console.error('Missing env vars');
-    process.exit(1);
+if (!connectionString) {
+  console.error('Missing DB connection env. Set POSTGRES_URL_NON_POOLING (recommended) or POSTGRES_HOST + POSTGRES_PASSWORD.');
+  process.exit(1);
 }
 
-const adminClient = createClient(supabaseUrl, serviceRoleKey);
+const { Client } = pg;
 
-const EMAIL = 'horapiaui@gmail.com';
-const PASSWORD = 'Horadopiaui123';
+async function setupAdmin() {
+  console.log('--- Configuring Admin & Tables ---');
+  
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+  });
 
-async function updateAdmin() {
-    console.log(`Checking user: ${EMAIL}...`);
+  try {
+    await client.connect();
 
-    // 1. Get User by Email (Admin API)
-    const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers();
+    // 1. Promote horapiaui@gmail.com to Admin
+    console.log('Promoting horapiaui@gmail.com...');
+    await client.query(`
+        UPDATE public.horapiaui_profiles
+        SET role = 'admin'
+        WHERE email = 'horapiaui@gmail.com';
+    `);
 
-    if (listError) {
-        console.error('Error listing users:', listError);
-        return;
+    // 2. Ensure Admin Tables Exist
+    const tables = [
+        `CREATE TABLE IF NOT EXISTS public.horapiaui_banners (
+          id uuid default gen_random_uuid() primary key,
+          title text default '',
+          video_url text default '',
+          alignment text default 'left',
+          is_active boolean default true,
+          created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+          updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+        )`,
+        `CREATE TABLE IF NOT EXISTS public.advertising_banners (
+          id uuid default gen_random_uuid() primary key,
+          image_url text not null,
+          link_url text,
+          display_order integer default 0,
+          is_active boolean default true,
+          created_at timestamp with time zone default timezone('utc'::text, now()) not null
+        )`
+    ];
+
+    for (const sql of tables) {
+        await client.query(sql);
     }
+    console.log('Admin Tables Verified.');
+    
+    // 3. Fix Permissions just in case
+    await client.query(`GRANT ALL ON public.horapiaui_profiles TO service_role;`);
+    await client.query(`GRANT ALL ON public.horapiaui_banners TO service_role;`);
+    await client.query(`GRANT ALL ON public.advertising_banners TO service_role;`);
 
-    const user = users.find(u => u.email === EMAIL);
-
-    if (user) {
-        console.log(`User found (${user.id}). Updating password...`);
-        const { error: updateError } = await adminClient.auth.admin.updateUserById(
-            user.id,
-            { password: PASSWORD }
-        );
-
-        if (updateError) {
-            console.error('Error updating password:', updateError);
-        } else {
-            console.log('Password updated successfully to: Horadopiaui123');
-        }
-    } else {
-        console.log('User not found. Creating user...');
-        const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
-            email: EMAIL,
-            password: PASSWORD,
-            email_confirm: true
-        });
-
-        if (createError) {
-            console.error('Error creating user:', createError);
-        } else {
-            console.log(`User created successfully: ${newUser.user.id}`);
-            // Also ensure profile exists
-            /*
-            await adminClient.from('profiles').upsert({
-                id: newUser.user.id,
-                email: EMAIL,
-                full_name: 'Admin Hora Piauí',
-                role: 'admin'
-            });
-            */
-        }
-    }
+  } catch (err) {
+    console.error(err.message);
+  } finally {
+    await client.end();
+  }
 }
 
-updateAdmin();
+setupAdmin();

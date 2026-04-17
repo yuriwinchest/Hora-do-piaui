@@ -14,7 +14,7 @@ const NewsListItem: React.FC<NewsListItemProps> = ({ item, className }) => {
         <img
           src={item.image}
           alt={item.title}
-          className="w-32 h-24 object-cover rounded bg-gray-200 flex-shrink-0 shadow-sm"
+          className="w-32 h-24 object-cover object-[center_25%] rounded bg-gray-200 flex-shrink-0 shadow-sm"
           referrerPolicy="no-referrer"
           loading="lazy"
         />

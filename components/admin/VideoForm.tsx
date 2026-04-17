@@ -20,7 +20,7 @@ const getEmbedUrl = (url: string) => {
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
         const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
         if (match && match[1]) {
-            return `https://www.youtube.com/embed/${match[1]}`;
+            return `https://www.youtube-nocookie.com/embed/${match[1]}`;
         }
     }
 

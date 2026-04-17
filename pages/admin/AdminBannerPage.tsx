@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RefreshCw, AlertCircle, CheckCircle2, LayoutTemplate, MonitorPlay, Tv, LAYOUT_PANEL_LEFT } from 'lucide-react';
+import { Save, RefreshCw, AlertCircle, CheckCircle2, LayoutTemplate, MonitorPlay, Tv, LayoutPanelLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { BannerConfig } from '../../types';
 import DynamicVideoBanner from '../../components/DynamicVideoBanner';
@@ -140,8 +140,8 @@ const AdminBannerPage: React.FC = () => {
                 <button
                     onClick={() => setActiveTab('home_main')}
                     className={`px-6 py-3 font-bold text-sm rounded-t-xl transition-all ${activeTab === 'home_main'
-                            ? 'bg-white border-x border-t border-gray-200 text-[#16a34a] -mb-px'
-                            : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                        ? 'bg-white border-x border-t border-gray-200 text-[#16a34a] -mb-px'
+                        : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                         }`}
                 >
                     Banner Principal (Topo)
@@ -149,8 +149,8 @@ const AdminBannerPage: React.FC = () => {
                 <button
                     onClick={() => setActiveTab('home_secondary')}
                     className={`px-6 py-3 font-bold text-sm rounded-t-xl transition-all ${activeTab === 'home_secondary'
-                            ? 'bg-white border-x border-t border-gray-200 text-[#16a34a] -mb-px'
-                            : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                        ? 'bg-white border-x border-t border-gray-200 text-[#16a34a] -mb-px'
+                        : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                         }`}
                 >
                     Banner Secundário (Mariano)
@@ -184,6 +184,8 @@ const AdminBannerPage: React.FC = () => {
                                     checked={currentConfig.is_active}
                                     onChange={(e) => setCurrentConfig({ ...currentConfig, is_active: e.target.checked })}
                                     className="sr-only peer"
+                                    title="Exibir Banner?"
+                                    aria-label="Exibir Banner?"
                                 />
                                 <span className="h-6 w-11 rounded-full bg-gray-300 peer-checked:bg-[#16a34a] transition-colors" />
                                 <span className="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-5" />

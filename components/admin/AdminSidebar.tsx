@@ -1,7 +1,8 @@
 import React from 'react';
 import { LayoutDashboard, FileText, Settings, LogOut, PlusCircle, Video, LayoutGrid, User, Tv, Megaphone, X, BarChart3 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+
+import { useAuth } from '../../hooks/useAuth';
 
 interface AdminSidebarProps {
     isOpen: boolean;
@@ -10,9 +11,10 @@ interface AdminSidebarProps {
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
+    const { signOut } = useAuth();
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
+        await signOut();
         navigate('/admin/login');
     };
 

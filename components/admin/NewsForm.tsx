@@ -7,6 +7,7 @@ import { NewsItem, NewsStatus } from '../../types';
 import NewsCardPreview from './NewsCardPreview';
 import { uploadImage } from '../../utils/upload';
 import { slugify } from '../../utils/slugify';
+import imageCompression from 'browser-image-compression';
 
 import { useAuth } from '../../hooks/useAuth';
 import { getCurrentDateBR, getCurrentTimeBR } from '../../utils/dateTime';
@@ -56,11 +57,25 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            const url = await uploadImage(file);
-            if (url) {
-                setFormData(prev => ({ ...prev, image: url }));
-            } else {
-                alert('Erro ao fazer upload da imagem.');
+            try {
+                // Sênior Engine: Adestramento Inteligente - força limite brutal mas com 1200px para qualidade full HD
+                const options = {
+                    maxSizeMB: 0.150,
+                    maxWidthOrHeight: 1200,
+                    useWebWorker: true,
+                    fileType: "image/webp"
+                };
+                const compressedFile = await imageCompression(file, options);
+                const url = await uploadImage(compressedFile);
+                
+                if (url) {
+                    setFormData(prev => ({ ...prev, image: url }));
+                } else {
+                    alert('Erro ao fazer upload da imagem.');
+                }
+            } catch (error) {
+                console.error("Erro na compressão:", error);
+                alert("Erro ao comprimir e salvar a imagem.");
             }
         }
     };
@@ -115,7 +130,15 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                         const file = input.files?.[0];
                         if (file) {
                             try {
-                                const url = await uploadImage(file);
+                                const options = {
+                                    maxSizeMB: 0.150,
+                                    maxWidthOrHeight: 1200,
+                                    useWebWorker: true,
+                                    fileType: "image/webp"
+                                };
+                                const compressedFile = await imageCompression(file, options);
+                                const url = await uploadImage(compressedFile);
+                                
                                 if (url) {
                                     const credit = window.prompt('(Opcional) Digite o crédito ou descrição para esta foto:', 'FOTO: DIVULGAÇÃO');
 
@@ -135,7 +158,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
                                             // Here we will try to insert a new line with the caption text and apply a class or style.
 
                                             // Move cursor after image
-                                            quill.setSelection(range.index + 1);
+                                            quill.setSelection(range.index + 1, 0);
 
                                             // Insert new line
                                             quill.insertText(range.index + 1, '\n');
@@ -150,9 +173,9 @@ const NewsForm: React.FC<NewsFormProps> = ({ onSave, existingItem }) => {
 
                                             // Insert another new line to reset style
                                             quill.insertText(range.index + 2 + captionText.length, '\n');
-                                            quill.setSelection(range.index + 2 + captionText.length + 1);
+                                            quill.setSelection(range.index + 2 + captionText.length + 1, 0);
                                         } else {
-                                            quill.setSelection(range.index + 1);
+                                            quill.setSelection(range.index + 1, 0);
                                         }
                                     }
                                 }

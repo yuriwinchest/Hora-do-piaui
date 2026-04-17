@@ -79,8 +79,11 @@ const AdminMonitoringPage: React.FC<AdminMonitoringPageProps> = ({ items }) => {
                     />
                     {searchTerm && (
                         <button
+                            type="button"
                             onClick={() => setSearchTerm('')}
                             className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            title="Limpar busca"
+                            aria-label="Limpar busca"
                         >
                             <X size={18} />
                         </button>
@@ -187,6 +190,8 @@ const AdminMonitoringPage: React.FC<AdminMonitoringPageProps> = ({ items }) => {
                                 <button
                                     onClick={() => setSelectedNews(null)}
                                     className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors"
+                                    title="Fechar detalhes"
+                                    aria-label="Fechar detalhes"
                                 >
                                     <X size={20} />
                                 </button>

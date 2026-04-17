@@ -13,7 +13,7 @@
   h4,
   h5,
   h6 {
-    font-family: 'Merriweather', serif;
+    font-family: 'Sora', sans-serif;
   }
 }
 
@@ -27,14 +27,32 @@
 .news-content h1,
 .news-content h2,
 .news-content h3 {
-  font-family: 'Merriweather', serif;
+  font-family: 'Sora', sans-serif;
   font-weight: 700;
   margin: 2rem 0 1rem;
   color: #111;
 }
 
 .news-content p {
+  font-family: 'Sora', sans-serif;
   margin-bottom: 1.5rem;
+}
+
+/* Forçar Sora no corpo do artigo (prose + conteúdo do Quill editor) */
+.prose,
+.prose p,
+.prose li,
+.prose blockquote,
+.prose span,
+.prose div {
+  font-family: 'Sora', sans-serif !important;
+}
+
+.news-content,
+.news-content span,
+.news-content div,
+.news-content li {
+  font-family: 'Sora', sans-serif;
 }
 
 .news-content ul,
@@ -89,4 +107,141 @@
 
 .quill-wrapper .ql-container.ql-snow {
   border: 1px solid #e5e7eb !important;
+}
+
+/* Instagram embed blockquote */
+blockquote.instagram-media {
+  background: #fff;
+  border: 0 !important;
+  border-radius: 12px;
+  margin: 0 auto;
+  max-width: 540px;
+  width: 100%;
+  padding: 0;
+}
+
+.instagram-loading-text {
+  color: #999;
+  font-size: 14px;
+}
+
+/* --- Headline Ticker (Publicidade) --- */
+.hp-ticker-bg {
+  background:
+    radial-gradient(1200px 120px at 15% 20%, rgba(22, 163, 74, 0.35), transparent 55%),
+    radial-gradient(900px 140px at 85% 70%, rgba(255, 255, 255, 0.12), transparent 60%),
+    linear-gradient(135deg, #0b0f0c 0%, #0d1b14 45%, #090b0a 100%);
+}
+
+.hp-ticker-fade {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+}
+
+.hp-ticker-pill {
+  font-family: 'Sora', sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 10px;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.hp-ticker-badge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  color: #0b0f0c;
+  background: #16a34a;
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.22);
+}
+
+.hp-ticker-label {
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}
+
+.hp-marquee {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.hp-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 18px;
+  padding: 10px 14px;
+  --hp-marquee-dur: 60s;
+  animation: hp-marquee-scroll var(--hp-marquee-dur) linear infinite;
+  will-change: transform;
+}
+
+.hp-marquee:hover .hp-marquee-track,
+.hp-marquee:focus-within .hp-marquee-track {
+  animation-play-state: paused;
+}
+
+.hp-marquee-reverse {
+  animation-direction: reverse;
+}
+
+.hp-marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  font-size: 14px;
+  text-decoration: none;
+  opacity: 0.95;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.hp-marquee-item:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.hp-marquee-title {
+  max-width: 62ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hp-marquee-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: rgba(22, 163, 74, 0.95);
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.18);
+}
+
+@keyframes hp-marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+  .hp-marquee-track {
+    --hp-marquee-dur: 90s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-marquee-track {
+    animation: none;
+    overflow-x: auto;
+  }
 }

@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import NewsFeedPage from './pages/NewsFeedPage';
 import VideosPage from './pages/VideosPage';
 import NewsDetailPage from './pages/NewsDetailPage';
+import ContactPage from './pages/ContactPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminNewsPage from './pages/admin/AdminNewsPage';
 import AdminNewsEditor from './pages/admin/AdminNewsEditor';
@@ -23,7 +24,7 @@ import GoogleAnalytics from './components/GoogleAnalytics';
 import { useNews } from './hooks/useNews';
 import { ErrorState } from './components/common/ErrorState';
 
-import { supabase } from './lib/supabase';
+import { AuthProvider } from './contexts/AuthContext';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -31,9 +32,10 @@ function ScrollToTop() {
   useEffect(() => {
     window.scrollTo(0, 0);
 
-    // Track site-wide visit (silently - 404 ok se RPC não existir)
+    // Track site-wide visit
     void (async () => {
       try {
+        const { supabase } = await import('./lib/supabase');
         await supabase.rpc('increment_site_visits');
       } catch (_) {}
     })();
@@ -47,7 +49,6 @@ function App() {
     allNews,
     videos,
     homeConfig,
-    bannerConfig,
     loading,
     fetchError,
     saveNews,
@@ -78,7 +79,7 @@ function App() {
   }
 
   return (
-    <>
+    <AuthProvider>
       <GoogleAnalytics />
       <ScrollToTop />
       <Routes>
@@ -89,7 +90,6 @@ function App() {
             <HomePage
               items={allNews}
               config={homeConfig}
-              bannerConfig={bannerConfig}
             />
             <Footer />
           </>
@@ -127,6 +127,14 @@ function App() {
           </>
         } />
 
+        <Route path="/fale-conosco" element={
+          <>
+            <Header />
+            <ContactPage />
+            <Footer />
+          </>
+        } />
+
         <Route path="/noticia/:slug" element={
           <>
             <Header />
@@ -135,97 +143,49 @@ function App() {
           </>
         } />
 
+
         {/* Admin Routes */}
         <Route path="/admin/login" element={<LoginPage />} />
-        <Route path="/admin" element={
-          <AdminLayout>
-            <AdminDashboard items={allNews} />
-          </AdminLayout>
-        } />
-
-        <Route path="/admin/noticias" element={
-          <AdminLayout>
-            <AdminNewsPage
-              items={allNews}
-              onDelete={deleteNews}
-              onPublish={publishNews}
-              homeConfig={homeConfig}
-              onUpdateHomeConfig={updateHomeConfig}
-            />
-          </AdminLayout>
-        } />
-
-        <Route path="/admin/noticia/nova" element={
-          <AdminLayout>
-            <AdminNewsEditor items={allNews} onSave={saveNews} />
-          </AdminLayout>
-        } />
-
-        <Route path="/admin/configuracoes" element={
-          <AdminLayout>
-            <AdminSettingsPage />
-          </AdminLayout>
-        } />
-
-        <Route path="/admin/noticia/:id" element={
-          <AdminLayout>
-            <AdminNewsEditor items={allNews} onSave={saveNews} />
-          </AdminLayout>
-        } />
-
-        <Route path="/admin/videos" element={
-          <AdminLayout>
-            <AdminVideosPage
-              items={videos}
-              onDelete={deleteVideo}
-            />
-          </AdminLayout>
-        } />
-
-        <Route path="/admin/video/novo" element={
-          <AdminLayout>
-            <AdminVideoEditor items={videos} onSave={saveVideo} />
-          </AdminLayout>
-        } />
-
-        <Route path="/admin/video/:id" element={
-          <AdminLayout>
-            <AdminVideoEditor items={videos} onSave={saveVideo} />
-          </AdminLayout>
-        } />
-
-        <Route path="/admin/layout" element={
-          <AdminLayout>
-            <AdminLayoutPage
-              items={allNews}
-              config={homeConfig}
-              onUpdate={updateHomeConfig}
-              onSaveNews={saveNews}
-            />
-          </AdminLayout>
-        } />
-
-        <Route path="/admin/banner" element={
-          <AdminLayout>
-            <AdminBannerPage />
-          </AdminLayout>
-        } />
-
-        <Route path="/admin/publicidade" element={
-          <AdminLayout>
-            <AdminAdsPage />
-          </AdminLayout>
-        } />
-        <Route path="/admin/monitoramento" element={
-          <AdminLayout>
-            <AdminMonitoringPage items={allNews} />
-          </AdminLayout>
-        } />
+        
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminDashboard items={allNews} />} />
+          <Route path="/admin/noticias" element={
+              <AdminNewsPage
+                items={allNews}
+                onDelete={deleteNews}
+                onPublish={publishNews}
+                homeConfig={homeConfig}
+                onUpdateHomeConfig={updateHomeConfig}
+              />
+          } />
+          <Route path="/admin/noticia/nova" element={<AdminNewsEditor items={allNews} onSave={saveNews} />} />
+          <Route path="/admin/configuracoes" element={<AdminSettingsPage />} />
+          <Route path="/admin/noticia/:id" element={<AdminNewsEditor items={allNews} onSave={saveNews} />} />
+          <Route path="/admin/videos" element={
+              <AdminVideosPage
+                items={videos}
+                onDelete={deleteVideo}
+              />
+          } />
+          <Route path="/admin/video/novo" element={<AdminVideoEditor items={videos} onSave={saveVideo} />} />
+          <Route path="/admin/video/:id" element={<AdminVideoEditor items={videos} onSave={saveVideo} />} />
+          <Route path="/admin/layout" element={
+              <AdminLayoutPage
+                items={allNews}
+                config={homeConfig}
+                onUpdate={updateHomeConfig}
+                onSaveNews={saveNews}
+              />
+          } />
+          <Route path="/admin/banner" element={<AdminBannerPage />} />
+          <Route path="/admin/publicidade" element={<AdminAdsPage />} />
+          <Route path="/admin/monitoramento" element={<AdminMonitoringPage items={allNews} />} />
+        </Route>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </>
+    </AuthProvider>
   );
 }
 
